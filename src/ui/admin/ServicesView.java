@@ -1,8 +1,7 @@
 package ui.admin;
 
-import controller.admin.UserController;
-import model.admin.UserModel;
-import ui.admin.form.UserAddForm;
+import controller.admin.ServiceController;
+import model.admin.ServiceModel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -11,7 +10,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-public class UserView extends JPanel {
+public class ServicesView extends JPanel {
 
     // =====================================
     // COLOR
@@ -41,13 +40,13 @@ public class UserView extends JPanel {
     // =====================================
     // CONTROLLER
     // =====================================
-    private UserController userController =
-            new UserController();
+    private ServiceController serviceController =
+            new ServiceController();
 
     // =====================================
     // CONSTRUCTOR
     // =====================================
-    public UserView() {
+    public ServicesView() {
 
         setLayout(new BorderLayout());
 
@@ -69,7 +68,7 @@ public class UserView extends JPanel {
         // TITLE
         // =====================================
         JLabel lblTitle =
-                new JLabel("QUẢN LÝ NGƯỜI DÙNG");
+                new JLabel("QUẢN LÝ DỊCH VỤ");
 
         lblTitle.setFont(
                 new Font("Segoe UI", Font.BOLD, 30)
@@ -109,8 +108,7 @@ public class UserView extends JPanel {
                         DANGER_COLOR
                 );
 
-
-
+ 
         buttonPanel.add(btnAdd);
 
         buttonPanel.add(btnUpdate);
@@ -119,76 +117,9 @@ public class UserView extends JPanel {
 
 
         // =====================================
-        // ADD EVENT
+        // REFRESH EVENT
         // =====================================
-        btnAdd.addActionListener(e -> {
-
-            JFrame parentFrame =
-                    (JFrame) SwingUtilities
-                            .getWindowAncestor(this);
-
-            UserAddForm form =
-                    new UserAddForm(parentFrame);
-
-            form.setVisible(true);
-        });
-
-        // =====================================
-        // DELETE EVENT
-        // =====================================
-        btnDelete.addActionListener(e -> {
-
-            int row = table.getSelectedRow();
-
-            if (row == -1) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Vui lòng chọn người dùng"
-                );
-
-                return;
-            }
-
-            int id = Integer.parseInt(
-                    table.getModel()
-                            .getValueAt(row, 0)
-                            .toString()
-            );
-
-            int confirm =
-                    JOptionPane.showConfirmDialog(
-                            this,
-                            "Bạn có chắc muốn xóa?",
-                            "Xác nhận",
-                            JOptionPane.YES_NO_OPTION
-                    );
-
-            if (confirm == JOptionPane.YES_OPTION) {
-
-                boolean result =
-                        userController.deleteUser(id);
-
-                if (result) {
-
-                    JOptionPane.showMessageDialog(
-                            this,
-                            "Xóa thành công"
-                    );
-
-                    loadAllUser();
-
-                } else {
-
-                    JOptionPane.showMessageDialog(
-                            this,
-                            "Xóa thất bại"
-                    );
-                }
-            }
-        });
-
-
+  
 
         topPanel.add(buttonPanel, BorderLayout.EAST);
 
@@ -199,19 +130,13 @@ public class UserView extends JPanel {
 
                 "ID",
 
-                "Họ và tên",
+                "Tên dịch vụ",
 
-                "Số điện thoại",
+                "Mô tả",
 
-                "Mật khẩu",
+                "Giá (VNĐ)",
 
-                "Ngày sinh",
-
-                "Địa chỉ",
-
-                "Avatar",
-
-                "Email"
+                "Hình ảnh"
         };
 
         model =
@@ -258,9 +183,9 @@ public class UserView extends JPanel {
         );
 
         // =====================================
-        // LOAD DATA
+        // LOAD DATABASE
         // =====================================
-        loadAllUser();
+        loadAllService();
 
         // =====================================
         // ADD COMPONENT
@@ -271,7 +196,7 @@ public class UserView extends JPanel {
     }
 
     // =====================================
-    // CREATE BUTTON
+    // BUTTON UI
     // =====================================
     private JButton createButton(
             String text,
@@ -304,47 +229,31 @@ public class UserView extends JPanel {
         return button;
     }
 
-    // =====================================
-    // LOAD ALL USER
-    // =====================================
-    public void loadAllUser() {
+    public void loadAllService() {
 
         try {
 
-            // XÓA DỮ LIỆU CŨ
             model.setRowCount(0);
 
-            // LẤY DỮ LIỆU DATABASE
-            List<UserModel> userList =
-                    userController.getAllUsers();
+            List<ServiceModel> serviceList =
+                    serviceController.getAllService();
 
-            System.out.println(
-                    "SIZE: " + userList.size()
-            );
-
-            // THÊM VÀO TABLE
-            userList.forEach(user -> {
+            serviceList.forEach(service -> {
 
                 model.addRow(new Object[]{
 
-                        user.getId(),
+                        service.getId(),
 
-                        user.getFullName(),
+                        service.getName(),
 
-                        user.getPhone(),
+                        service.getDescription(),
 
-                        user.getPassword(),
+                        service.getPrice(),
 
-                        user.getBirthDate(),
-
-                        user.getAddress(),
-
-                        user.getAvatar(),
-
-                        user.getEmail()
+                        service.getImage()
                 });
 
-                System.out.println(user);
+                System.out.println(service);
             });
 
         } catch (Exception e) {
@@ -356,13 +265,5 @@ public class UserView extends JPanel {
                     "Lỗi load dữ liệu"
             );
         }
-    }
-
-    // =====================================
-    // DELETE USER
-    // =====================================
-    private boolean deleteUser(int id) {
-
-        return userController.deleteUser(id);
     }
 }

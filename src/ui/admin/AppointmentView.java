@@ -1,8 +1,7 @@
 package ui.admin;
 
-import controller.admin.UserController;
-import model.admin.UserModel;
-import ui.admin.form.UserAddForm;
+import controller.admin.AppointmentController;
+import model.admin.AppointmentModel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -11,7 +10,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-public class UserView extends JPanel {
+public class AppointmentView extends JPanel {
 
     // =====================================
     // COLOR
@@ -25,11 +24,11 @@ public class UserView extends JPanel {
     private final Color SUCCESS_COLOR =
             new Color(46, 204, 113);
 
-    private final Color WARNING_COLOR =
-            new Color(241, 196, 15);
-
     private final Color DANGER_COLOR =
             new Color(231, 76, 60);
+
+    private final Color WARNING_COLOR =
+            new Color(241, 196, 15);
 
     // =====================================
     // TABLE
@@ -41,13 +40,13 @@ public class UserView extends JPanel {
     // =====================================
     // CONTROLLER
     // =====================================
-    private UserController userController =
-            new UserController();
+    private AppointmentController appointmentController =
+            new AppointmentController();
 
     // =====================================
     // CONSTRUCTOR
     // =====================================
-    public UserView() {
+    public AppointmentView() {
 
         setLayout(new BorderLayout());
 
@@ -69,7 +68,7 @@ public class UserView extends JPanel {
         // TITLE
         // =====================================
         JLabel lblTitle =
-                new JLabel("QUẢN LÝ NGƯỜI DÙNG");
+                new JLabel("QUẢN LÝ LỊCH HẸN");
 
         lblTitle.setFont(
                 new Font("Segoe UI", Font.BOLD, 30)
@@ -97,98 +96,36 @@ public class UserView extends JPanel {
                         SUCCESS_COLOR
                 );
 
-        JButton btnUpdate =
-                createButton(
-                        "Sửa",
-                        PRIMARY_COLOR
-                );
-
         JButton btnDelete =
                 createButton(
                         "Xóa",
                         DANGER_COLOR
                 );
 
-
+        JButton btnRefresh =
+                createButton(
+                        "Làm mới",
+                        WARNING_COLOR
+                );
 
         buttonPanel.add(btnAdd);
 
-        buttonPanel.add(btnUpdate);
-
         buttonPanel.add(btnDelete);
 
+        buttonPanel.add(btnRefresh);
 
         // =====================================
-        // ADD EVENT
+        // REFRESH EVENT
         // =====================================
-        btnAdd.addActionListener(e -> {
+        btnRefresh.addActionListener(e -> {
 
-            JFrame parentFrame =
-                    (JFrame) SwingUtilities
-                            .getWindowAncestor(this);
+            loadAllAppointment();
 
-            UserAddForm form =
-                    new UserAddForm(parentFrame);
-
-            form.setVisible(true);
-        });
-
-        // =====================================
-        // DELETE EVENT
-        // =====================================
-        btnDelete.addActionListener(e -> {
-
-            int row = table.getSelectedRow();
-
-            if (row == -1) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Vui lòng chọn người dùng"
-                );
-
-                return;
-            }
-
-            int id = Integer.parseInt(
-                    table.getModel()
-                            .getValueAt(row, 0)
-                            .toString()
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Đã tải lại dữ liệu"
             );
-
-            int confirm =
-                    JOptionPane.showConfirmDialog(
-                            this,
-                            "Bạn có chắc muốn xóa?",
-                            "Xác nhận",
-                            JOptionPane.YES_NO_OPTION
-                    );
-
-            if (confirm == JOptionPane.YES_OPTION) {
-
-                boolean result =
-                        userController.deleteUser(id);
-
-                if (result) {
-
-                    JOptionPane.showMessageDialog(
-                            this,
-                            "Xóa thành công"
-                    );
-
-                    loadAllUser();
-
-                } else {
-
-                    JOptionPane.showMessageDialog(
-                            this,
-                            "Xóa thất bại"
-                    );
-                }
-            }
         });
-
-
 
         topPanel.add(buttonPanel, BorderLayout.EAST);
 
@@ -197,21 +134,15 @@ public class UserView extends JPanel {
         // =====================================
         String[] columns = {
 
-                "ID",
+                "ID Cuộc Hẹn",
 
-                "Họ và tên",
+                "Tên Bác Sĩ",
 
-                "Số điện thoại",
+                "Tên Bệnh Nhân",
 
-                "Mật khẩu",
+                "Ngày Hẹn",
 
-                "Ngày sinh",
-
-                "Địa chỉ",
-
-                "Avatar",
-
-                "Email"
+                "Trạng Thái"
         };
 
         model =
@@ -260,7 +191,7 @@ public class UserView extends JPanel {
         // =====================================
         // LOAD DATA
         // =====================================
-        loadAllUser();
+        loadAllAppointment();
 
         // =====================================
         // ADD COMPONENT
@@ -305,46 +236,31 @@ public class UserView extends JPanel {
     }
 
     // =====================================
-    // LOAD ALL USER
+    // LOAD ALL APPOINTMENT
     // =====================================
-    public void loadAllUser() {
+    public void loadAllAppointment() {
 
         try {
 
-            // XÓA DỮ LIỆU CŨ
             model.setRowCount(0);
 
-            // LẤY DỮ LIỆU DATABASE
-            List<UserModel> userList =
-                    userController.getAllUsers();
+            List<AppointmentModel> appointmentList =
+                    appointmentController.getAllAppointment();
 
-            System.out.println(
-                    "SIZE: " + userList.size()
-            );
-
-            // THÊM VÀO TABLE
-            userList.forEach(user -> {
+            appointmentList.forEach(appointment -> {
 
                 model.addRow(new Object[]{
 
-                        user.getId(),
+                        appointment.getId(),
 
-                        user.getFullName(),
+                        appointment.getDoctorName(),
 
-                        user.getPhone(),
+                        appointment.getPatientName(),
 
-                        user.getPassword(),
+                        appointment.getAppointmentDate(),
 
-                        user.getBirthDate(),
-
-                        user.getAddress(),
-
-                        user.getAvatar(),
-
-                        user.getEmail()
+                        appointment.getStatus()
                 });
-
-                System.out.println(user);
             });
 
         } catch (Exception e) {
@@ -356,13 +272,5 @@ public class UserView extends JPanel {
                     "Lỗi load dữ liệu"
             );
         }
-    }
-
-    // =====================================
-    // DELETE USER
-    // =====================================
-    private boolean deleteUser(int id) {
-
-        return userController.deleteUser(id);
     }
 }

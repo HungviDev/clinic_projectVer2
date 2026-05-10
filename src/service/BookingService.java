@@ -1,14 +1,13 @@
 package service;
 
-import model.Booking;
-import model.Doctor;
-import model.Service;
-
 import java.util.List;
 
 import dao.user.BookingDAO;
 import dao.user.DoctorDAO;
 import dao.user.ServiceDAO;
+import model.user.Booking;
+import model.user.Doctor;
+import model.user.Service;
 
 public class BookingService {
 

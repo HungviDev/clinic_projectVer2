@@ -1,7 +1,7 @@
 package service;
 
 import dao.user.AppointmentDetailDAO;
-import model.AppointmentDetail;
+import model.user.AppointmentDetail;
 
 public class AppointmentDetailService {
 

@@ -7,6 +7,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
 import config.DBConnection;
+import model.user.Appointment;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -20,7 +21,7 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
-import model.Appointment;
+
 import service.AppointmentService;
 
 import java.util.List;

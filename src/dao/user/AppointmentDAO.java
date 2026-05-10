@@ -1,7 +1,7 @@
 package dao.user;
 
 import config.DBConnection;
-import model.Appointment;
+import model.user.Appointment;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

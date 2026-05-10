@@ -1,10 +1,9 @@
 package controller.user;
 
-import model.TreatmentHistory;
-
 import java.util.List;
 
 import dao.user.TreatmentHistoryDAO;
+import model.user.TreatmentHistory;
 
 public class TreatmentHistoryController {
 

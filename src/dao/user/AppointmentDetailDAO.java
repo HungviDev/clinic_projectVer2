@@ -1,7 +1,7 @@
 package dao.user;
 
 import config.DBConnection;
-import model.AppointmentDetail;
+import model.user.AppointmentDetail;
 
 import java.sql.*;
 

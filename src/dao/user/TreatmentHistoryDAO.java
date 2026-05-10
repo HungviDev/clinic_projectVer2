@@ -1,7 +1,7 @@
 package dao.user;
 
 import config.DBConnection;
-import model.TreatmentHistory;
+import model.user.TreatmentHistory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

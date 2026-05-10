@@ -1,13 +1,16 @@
 package ui.auth;
 
-import model.User;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+import controller.admin.UserController;
 import controller.user.AuthController;
 import controller.user.DashboardController;
+import global.GlobalData;
+import model.admin.UserModel;
+import model.user.User;
 
 
 public class LoginForm extends JFrame {
@@ -15,7 +18,7 @@ public class LoginForm extends JFrame {
     private JTextField txtPhone;
     private JPasswordField txtPass;
     private boolean isPasswordVisible = false;
-
+    private UserController userController = new UserController();
 
     // Định nghĩa các màu sắc chủ đạo
 private final Color COLOR_PRIMARY = new Color(0, 123, 255);   // xanh dương chính
@@ -261,7 +264,8 @@ private void login() {
 
         User user =
                 authController.login(phone, password);
-
+        UserModel userModel = userController.getUserByPhone(phone);
+        GlobalData.userModel = userModel;
         // ================= LOGIN FAIL =================
 
         if (user == null) {

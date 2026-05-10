@@ -8,6 +8,7 @@ import javax.swing.border.LineBorder;
 
 import controller.user.TreatmentHistoryController;
 import dao.user.TreatmentHistoryDAO;
+import model.user.TreatmentHistory;
 
 import java.awt.*;
 import java.sql.Connection;
@@ -15,7 +16,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import model.TreatmentHistory;
 
 public class TreatmentHistoryPanel extends JPanel {
 

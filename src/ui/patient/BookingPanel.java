@@ -3,6 +3,11 @@ package ui.patient;
 import config.*;
 import config.DBConnection;
 import controller.user.BookingController;
+import dao.user.DoctorDAO;
+import global.GlobalData;
+import model.user.Booking;
+import model.user.Doctor;
+import model.user.Service;
 import ui.auth.MainDashboard;
 
 import javax.swing.*;
@@ -11,6 +16,10 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,10 +28,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
-import model.Booking;
-import model.Doctor;
-import model.Service;
 
 public class BookingPanel extends JPanel {
 
@@ -51,7 +56,7 @@ public class BookingPanel extends JPanel {
 
     // Danh sách khung giờ mẫu
     private final String[] timeSlots = {"08:30", "09:30", "10:30", "13:30", "14:30", "15:30"};
-
+    private DoctorDAO doctorDAO = new DoctorDAO();
     public BookingPanel(int userId) {
         controller = new BookingController();
         this.loggedInUserId = userId;
@@ -250,7 +255,14 @@ public class BookingPanel extends JPanel {
 
                 loadDoctors();
                 updateTimeSlots();
-
+                doctorDAO.getFullNameById(booking.getDoctorId());
+                sendMail(
+                GlobalData.userModel.getEmail(),
+                doctorDAO.getFullNameById(booking.getDoctorId()),
+                GlobalData.userModel.getFullName(),
+                new java.text.SimpleDateFormat("dd/MM/yyyy hh:mm a")
+                        .format(booking.getAppointmentDate())
+        );
             } else {
 
                 JOptionPane.showMessageDialog(
@@ -507,5 +519,41 @@ public class BookingPanel extends JPanel {
         public String getValue() { return value; }
         @Override
         public String toString() { return display; }
+    }
+    public void sendMail(String to,
+                                String doctorName,
+                                String patientName,
+                                String appointmentDate) {
+
+        try {
+
+            String json = """
+            {
+                "to": "%s",
+                "doctorName": "%s",
+                "patientName": "%s",
+                "appointmentDate": "%s"
+            }
+            """.formatted(to, doctorName, patientName, appointmentDate);
+
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:3000/send-mail"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+
+            HttpResponse<String> response = client.send(
+                    request,
+                    HttpResponse.BodyHandlers.ofString()
+            );
+
+            System.out.println("Send mail status: " + response.statusCode());
+            System.out.println("Response: " + response.body());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

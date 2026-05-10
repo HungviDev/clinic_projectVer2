@@ -2,12 +2,11 @@ package ui.patient;
 
 import config.DBConnection;
 import controller.user.AppointmentDetailController;
+import model.user.AppointmentDetail;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-
-import model.AppointmentDetail;
 
 public class AppointmentDetailDialog extends JDialog {
 

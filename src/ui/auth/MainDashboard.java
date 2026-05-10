@@ -1,5 +1,10 @@
 package ui.auth;
 
+import ui.admin.AppointmentView;
+import ui.admin.DashboardView;
+import ui.admin.DoctorView;
+import ui.admin.OrderView;
+import ui.admin.ServicesView;
 import ui.admin.UserView;
 import ui.auth.LoginForm;
 
@@ -8,10 +13,10 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import controller.user.DashboardController;
+import model.user.User;
 
 import java.awt.*;
-import ui.doctor.HomeDoctorPanel;
-import model.User;
+import ui.doctor.View.DoctorDashboardView;
 
 public class MainDashboard extends JFrame {
 
@@ -112,9 +117,9 @@ public class MainDashboard extends JFrame {
 
         // ================= DOCTOR (Role = 2) =================
         if(controller.isDoctor()) {
-            JButton btnSchedule = createMenuButton("📅 Lịch khám");
-            JButton btnMedical = createMenuButton("📋 Hồ sơ bệnh án");
-            JButton btnPatients = createMenuButton("🧑‍🤝‍🧑 Bệnh nhân");
+            JButton btnSchedule = createMenuButton("Lịch khám");
+            JButton btnMedical = createMenuButton("Hồ sơ bệnh án");
+            JButton btnPatients = createMenuButton("Bệnh nhân");
 
             sidebar.add(btnSchedule);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -132,9 +137,10 @@ public class MainDashboard extends JFrame {
             JButton btnUsers = createMenuButton("Quản lý người dùng");
             JButton btnDoctors = createMenuButton("Quản lý bác sĩ");
             JButton btnServices = createMenuButton("Quản lý dịch vụ");
+            JButton btnAppoinment = createMenuButton("Quản lý lịch hẹn");
             JButton btnOrders = createMenuButton("Quản lý đơn hàng");
             JButton btnStatistics = createMenuButton("Thống kê");
-
+            sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnUsers);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnDoctors);
@@ -144,12 +150,15 @@ public class MainDashboard extends JFrame {
             sidebar.add(btnOrders);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnStatistics);
+            sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
+            sidebar.add(btnAppoinment);
 
             btnUsers.addActionListener(e -> cardLayout.show(contentPanel, "USERS"));
             btnDoctors.addActionListener(e -> cardLayout.show(contentPanel, "DOCTORS"));
             btnServices.addActionListener(e -> cardLayout.show(contentPanel, "SERVICES_ADMIN"));
             btnOrders.addActionListener(e -> cardLayout.show(contentPanel, "ORDERS"));
             btnStatistics.addActionListener(e -> cardLayout.show(contentPanel, "STATISTICS"));
+            btnAppoinment.addActionListener(e -> cardLayout.show(contentPanel, "APPOINTMENTS"));
         }
 
         // ================= LOGOUT =================
@@ -187,7 +196,7 @@ public class MainDashboard extends JFrame {
         }
         // (Bác sĩ)
         if(role == 2)
-        {contentPanel.add(new HomeDoctorPanel(userName), "HOME");
+        {contentPanel.add(new DoctorDashboardView(userId,userName), "HOME");
         contentPanel.add(createPagePanel("LỊCH KHÁM", "Danh sách lịch hẹn"), "SCHEDULE");
         contentPanel.add(createPagePanel("HỒ SƠ BỆNH ÁN", "Quản lý bệnh án"), "MEDICAL");
         contentPanel.add(createPagePanel("BỆNH NHÂN", "Danh sách bệnh nhân"), "PATIENTS");
@@ -195,10 +204,12 @@ public class MainDashboard extends JFrame {
         // (Admin)
         if(role == 1)
         {
+        contentPanel.add(new DashboardView (), "HOME");
         contentPanel.add(new UserView(), "USERS");
-        contentPanel.add(createPagePanel("QUẢN LÝ BÁC SĨ", "CRUD Doctor"), "DOCTORS");
-        contentPanel.add(createPagePanel("QUẢN LÝ DỊCH VỤ", "CRUD Service"), "SERVICES_ADMIN");
-        contentPanel.add(createPagePanel("QUẢN LÝ ĐƠN HÀNG", "CRUD Order"), "ORDERS");
+        contentPanel.add(new DoctorView(), "DOCTORS");
+        contentPanel.add(new ServicesView(), "SERVICES_ADMIN");
+        contentPanel.add(new AppointmentView(), "APPOINTMENTS");
+        contentPanel.add(new OrderView(), "ORDERS");
         contentPanel.add(createPagePanel("THỐNG KÊ", "Biểu đồ doanh thu"), "STATISTICS");
         }
 

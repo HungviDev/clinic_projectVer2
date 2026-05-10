@@ -3,7 +3,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import controller.admin.UserController;
-import model.UserModel;
+import model.admin.UserModel;
 import ui.admin.UserView;
 
 import java.awt.*;

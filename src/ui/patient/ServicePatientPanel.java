@@ -3,6 +3,7 @@ package ui.patient;
 import config.DBConnection; // Import kết nối Database của bạn
 import controller.user.ServiceController;
 import dao.user.ServiceDAO;
+import model.user.Service;
 import ui.auth.MainDashboard;
 
 import javax.swing.*;
@@ -15,7 +16,6 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import model.Service;
 
 public class ServicePatientPanel extends JPanel {
 
