@@ -1,13 +1,16 @@
 package ui.auth;
 
+import ui.admin.UserView;
 import ui.auth.LoginForm;
 
 import ui.patient.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import controller.user.DashboardController;
+
 import java.awt.*;
 import ui.doctor.HomeDoctorPanel;
-import controller.DashboardController;
 import model.User;
 
 public class MainDashboard extends JFrame {
@@ -126,11 +129,11 @@ public class MainDashboard extends JFrame {
 
         // ================= ADMIN (Role = 1) =================
         if(controller.isAdmin()) {
-            JButton btnUsers = createMenuButton("👥 Quản lý user");
-            JButton btnDoctors = createMenuButton("🩺 Quản lý bác sĩ");
-            JButton btnServices = createMenuButton("🦷 Quản lý dịch vụ");
-            JButton btnOrders = createMenuButton("🛒 Quản lý đơn hàng");
-            JButton btnStatistics = createMenuButton("📊 Thống kê");
+            JButton btnUsers = createMenuButton("Quản lý người dùng");
+            JButton btnDoctors = createMenuButton("Quản lý bác sĩ");
+            JButton btnServices = createMenuButton("Quản lý dịch vụ");
+            JButton btnOrders = createMenuButton("Quản lý đơn hàng");
+            JButton btnStatistics = createMenuButton("Thống kê");
 
             sidebar.add(btnUsers);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -192,7 +195,7 @@ public class MainDashboard extends JFrame {
         // (Admin)
         if(role == 1)
         {
-        contentPanel.add(createPagePanel("QUẢN LÝ USER", "CRUD User"), "USERS");
+        contentPanel.add(new UserView(), "USERS");
         contentPanel.add(createPagePanel("QUẢN LÝ BÁC SĨ", "CRUD Doctor"), "DOCTORS");
         contentPanel.add(createPagePanel("QUẢN LÝ DỊCH VỤ", "CRUD Service"), "SERVICES_ADMIN");
         contentPanel.add(createPagePanel("QUẢN LÝ ĐƠN HÀNG", "CRUD Order"), "ORDERS");

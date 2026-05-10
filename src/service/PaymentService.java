@@ -1,9 +1,10 @@
 package service;
 
-import dao.PaymentDAO;
 import model.Payment;
 
 import java.util.List;
+
+import dao.user.PaymentDAO;
 
 public class PaymentService {
 

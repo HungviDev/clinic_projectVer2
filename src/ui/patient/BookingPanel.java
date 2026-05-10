@@ -2,6 +2,7 @@ package ui.patient;
 
 import config.*;
 import config.DBConnection;
+import controller.user.BookingController;
 import ui.auth.MainDashboard;
 
 import javax.swing.*;
@@ -18,7 +19,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import controller.BookingController;
+
 import model.Booking;
 import model.Doctor;
 import model.Service;

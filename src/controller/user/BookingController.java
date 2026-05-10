@@ -1,4 +1,4 @@
-package controller;
+package controller.user;
 
 import model.Booking;
 import model.Doctor;

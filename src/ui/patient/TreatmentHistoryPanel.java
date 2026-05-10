@@ -5,6 +5,10 @@ package ui.patient;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+
+import controller.user.TreatmentHistoryController;
+import dao.user.TreatmentHistoryDAO;
+
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -12,8 +16,6 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import model.TreatmentHistory;
-import controller.TreatmentHistoryController;
-import dao.TreatmentHistoryDAO;
 
 public class TreatmentHistoryPanel extends JPanel {
 

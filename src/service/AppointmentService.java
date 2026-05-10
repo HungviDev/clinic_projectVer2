@@ -1,10 +1,11 @@
 package service;
 
-import dao.AppointmentDAO;
 import model.Appointment;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import dao.user.AppointmentDAO;
 
 public class AppointmentService {
 

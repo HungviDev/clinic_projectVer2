@@ -1,9 +1,10 @@
-package controller;
+package controller.user;
 
-import dao.ServiceDAO;
 import model.Service;
 
 import java.util.List;
+
+import dao.user.ServiceDAO;
 
 public class ServiceController {
 

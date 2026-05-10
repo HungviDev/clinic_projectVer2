@@ -1,4 +1,4 @@
-package dao;
+package dao.user;
 
 import config.DBConnection;
 import model.Doctor;
