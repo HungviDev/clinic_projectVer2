@@ -73,12 +73,12 @@ public class ProfilePanel extends JPanel {
         menuGroup1.setBackground(Color.WHITE);
         
         // Gắn lệnh switchPage vào các menu
-        menuGroup1.add(createMenuItem("📅", "Lịch hẹn của tôi", true, () -> switchPage("SCHEDULE")));
-        menuGroup1.add(createMenuItem("🛒", "Lịch sử mua hàng", true, () -> switchPage("ORDER_HISTORY")));
-        menuGroup1.add(createMenuItem("💳", "Lịch sử thanh toán", true, () -> switchPage("PAYMENT_HISTORY")));
+        menuGroup1.add(createMenuItem("", "Lịch hẹn của tôi", true, () -> switchPage("SCHEDULE")));
+        // menuGroup1.add(createMenuItem("", "Lịch sử mua hàng", true, () -> switchPage("ORDER_HISTORY")));
+        menuGroup1.add(createMenuItem("", "Lịch sử thanh toán", true, () -> switchPage("PAYMENT_HISTORY")));
         
         // ĐÂY LÀ CHỖ CHUYỂN TRANG LỊCH SỬ ĐIỀU TRỊ:
-        menuGroup1.add(createMenuItem("📁", "Lịch sử điều trị", true, () -> switchPage("MEDICAL_RECORD")));
+        menuGroup1.add(createMenuItem("", "Lịch sử điều trị", true, () -> switchPage("MEDICAL_RECORD")));
         
         mainContent.add(menuGroup1);
         mainContent.add(Box.createRigidArea(new Dimension(0, 15))); // Khoảng xám phân cách
@@ -89,8 +89,8 @@ public class ProfilePanel extends JPanel {
         menuGroup2.setBackground(Color.WHITE);
         
         // Trợ giúp và Đăng xuất thì chưa cần nhảy trang CardLayout nên truyền null
-        menuGroup2.add(createMenuItem("❓", "Trợ giúp", true, null));
-        menuGroup2.add(createMenuItem("🚪", "Đăng xuất", false, null));
+        menuGroup2.add(createMenuItem("", "Chỉnh sửa thông tin", true, () -> switchPage("EDIT_PROFILE")));
+        menuGroup2.add(createMenuItem("", "Đăng xuất", false, null));
         
         mainContent.add(menuGroup2);
 

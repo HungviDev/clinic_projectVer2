@@ -5,7 +5,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
 import controller.admin.UserController;
-import model.UserModel;
+import model.User;
+// import model.UserModel;
 import ui.admin.form.UserAddForm;
 
 import java.awt.*;
@@ -214,7 +215,7 @@ public class UserView extends JPanel {
 
         try {
             model.setRowCount(0);
-            List<UserModel> userList =
+            List<User> userList =
                     userController.getAllUsers();
 
             System.out.println(

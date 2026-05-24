@@ -39,4 +39,8 @@ public class BookingService {
     public List<Service> getServices() {
         return serviceDAO.getAllServices();
     }
+
+    public String getNextTreatmentStage(int userId, int serviceId) {
+        return bookingDAO.getNextTreatmentStageFromDB(userId, serviceId);
+    }
 }

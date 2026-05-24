@@ -1,13 +1,14 @@
 package ui.auth;
 
-import model.User;
+import controller.user.AuthController;
+import controller.user.DashboardController;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-import controller.user.AuthController;
-import controller.user.DashboardController;
+import model.User;
+import model.User;
 
 
 public class LoginForm extends JFrame {
@@ -32,9 +33,8 @@ private final Color COLOR_BUTTON  = new Color(0, 102, 204);   // xanh đậm cho
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         getContentPane().setBackground(Color.WHITE);
-        setResizable(false); // Khóa kích thước để form luôn giữ tỷ lệ đẹp
-
-        // ================= HEADER PANEL (Phần xanh lá chứa Logo) =================
+        setResizable(false); 
+        
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(COLOR_PRIMARY);
         headerPanel.setPreferredSize(new Dimension(400, 220));
@@ -66,7 +66,7 @@ private final Color COLOR_BUTTON  = new Color(0, 102, 204);   // xanh đậm cho
         formPanel.setBackground(Color.WHITE);
         formPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 0, 8, 0); // Khoảng cách đều đặn trên/dưới cho các hàng
+        gbc.insets = new Insets(8, 0, 8, 0); 
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx = 0;
         gbc.weightx = 1.0;

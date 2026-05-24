@@ -8,16 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import config.DBConnection;
-import model.UserModel;
+import dao.user.UserDAO;
+import model.User;
+import model.User;
 
 public class UserController {
 
     // =====================================
     // GET ALL USERS
     // =====================================
-    public List<UserModel> getAllUsers() {
+    public List<User> getAllUsers() {
 
-        List<UserModel> userList = new ArrayList<>();
+        List<User> userList = new ArrayList<>();
 
         try {
 
@@ -31,7 +33,7 @@ public class UserController {
 
             while (rs.next()) {
 
-                UserModel user = new UserModel();
+                User user = new User();
 
                 user.setId(
                         rs.getInt("id")
@@ -79,7 +81,7 @@ public class UserController {
 
         return userList;
     }
-    public boolean insertUser(UserModel user) {
+    public boolean insertUser(User user) {
 
     try {
 
@@ -168,7 +170,7 @@ public boolean deleteUser(int id) {
             return false;
         }
     }
-     public boolean updateUser(UserModel user) {
+     public boolean updateUser(User user) {
         try {
             Connection conn = DBConnection.getConnection();
             String sql = """
@@ -225,6 +227,19 @@ public boolean deleteUser(int id) {
 
             return false;
         }
+    }
+
+    public boolean updateProfile(int userId, String fullName, String phone, String birthDateStr, String address, String email) throws IllegalArgumentException {
+        java.sql.Date sqlDate = null;
+        
+        // Kiểm tra và ép kiểu chuỗi ngày tháng sang java.sql.Date
+        if (birthDateStr != null && !birthDateStr.trim().isEmpty()) {
+            sqlDate = java.sql.Date.valueOf(birthDateStr.trim()); // Sẽ ném ra IllegalArgumentException nếu sai định dạng
+        }
+        
+        // Gọi xuống DAO để thực thi DB
+        UserDAO userdao = new UserDAO();
+        return userdao.updateProfile(userId, fullName, phone, sqlDate, address, email);
     }
 
 }

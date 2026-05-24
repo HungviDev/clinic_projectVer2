@@ -17,9 +17,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-
+import dao.user.BookingDAO;
 import model.Booking;
 import model.Doctor;
 import model.Service;
@@ -48,6 +46,11 @@ public class BookingPanel extends JPanel {
     private int selectedDoctorId = -1;
     private String selectedTimeSlot = "";
     private BookingController controller;
+
+    // UI chứa thông tin lộ trình tiếp theo
+    private JPanel nextStageContainer;
+    private JLabel lblNextStageInfo;
+    private String currentStageName = "Không có";
 
     // Danh sách khung giờ mẫu
     private final String[] timeSlots = {"08:30", "09:30", "10:30", "13:30", "14:30", "15:30"};
@@ -82,12 +85,40 @@ public class BookingPanel extends JPanel {
         formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // 2. Dịch vụ (Load từ DB)
+        // formPanel.add(createSectionLabel("Dịch vụ"));
+        // cbService = new JComboBox<>();
+        // styleComboBox(cbService);
+        // loadServices();
+        // formPanel.add(cbService);
+        // formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+
+        // 2. Dịch vụ (Load từ DB)
         formPanel.add(createSectionLabel("Dịch vụ"));
         cbService = new JComboBox<>();
         styleComboBox(cbService);
-        loadServices();
+        
+        loadServices(); // Phải load dữ liệu TRƯỚC khi gắn sự kiện
+        
+        // Gắn sự kiện
+        cbService.addActionListener(e -> checkAndDisplayNextTreatment());
+        
         formPanel.add(cbService);
         formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+
+        // KHU VỰC: Lịch điều trị tiếp theo (Mặc định ẩn)
+        nextStageContainer = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        nextStageContainer.setBackground(Color.WHITE);
+        nextStageContainer.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        lblNextStageInfo = new JLabel("");
+        lblNextStageInfo.setFont(new Font("Segoe UI", Font.ITALIC, 14));
+        lblNextStageInfo.setForeground(TEXT_DARK);
+        nextStageContainer.add(lblNextStageInfo);
+        
+        nextStageContainer.setVisible(false); // Ẩn đi khi mới load
+        
+        formPanel.add(nextStageContainer);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 
         // 3. Bác sĩ (Load từ DB dưới dạng Card)
         formPanel.add(createSectionLabel("Bác sĩ"));
@@ -151,6 +182,50 @@ public class BookingPanel extends JPanel {
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         add(scrollPane, BorderLayout.CENTER);
     }
+
+    // ================= HÀM XỬ LÝ LỘ TRÌNH ĐIỀU TRỊ =================
+    
+    private void checkAndDisplayNextTreatment() {
+        if (cbService.getSelectedItem() == null) {
+            nextStageContainer.setVisible(false);
+            return;
+        }
+        
+        // LẤY ID CỦA DỊCH VỤ (Thay vì lấy tên như cũ)
+        ComboItem selectedItem = (ComboItem) cbService.getSelectedItem();
+        int serviceId = selectedItem.getId(); 
+        
+        // Truyền ID dịch vụ xuống hàm check DB
+        String nextTreatment = controller.getNextTreatmentStage(loggedInUserId, serviceId);
+        
+        if (nextTreatment != null && !nextTreatment.isEmpty()) {
+            lblNextStageInfo.setText("<html>Lịch điều trị tiếp theo: <b style='color:#2ecc71'>" + nextTreatment + "</b></html>");
+            nextStageContainer.setVisible(true);
+            nextStageContainer.setBorder(new EmptyBorder(0, 0, 15, 0));
+            
+            // THÊM ĐOẠN NÀY: Cắt chuỗi để lấy đúng stage_name (Phía sau dấu " ➔ ")
+            String[] parts = nextTreatment.split(" ➔ ");
+            if(parts.length > 1){
+                currentStageName = parts[1]; // Gán tên bước điều trị vào biến
+            } else {
+                currentStageName = nextTreatment;
+            }
+            
+        } else {
+            nextStageContainer.setVisible(false);
+            nextStageContainer.setBorder(null);
+            
+            // THÊM DÒNG NÀY: Reset lại nếu không có lộ trình
+            currentStageName = "Không có"; 
+        }
+        
+        Container parent = nextStageContainer.getParent();
+        if (parent != null) {
+            parent.revalidate();
+            parent.repaint();
+        }
+    }
+
 
     // ================= HÀM XỬ LÝ LƯU ĐẶT LỊCH (DATABASE) ================= 
     private void submitBooking() {
@@ -221,7 +296,8 @@ public class BookingPanel extends JPanel {
                             selectedDoctorId,
                             srv.getId(),
                             Timestamp.valueOf(dateTimeStr),
-                            txtNote.getText().trim()
+                            txtNote.getText().trim(),
+                            currentStageName
                     );
 
             boolean success =
@@ -247,9 +323,11 @@ public class BookingPanel extends JPanel {
                 selectedDoctorId = -1;
                 selectedTimeSlot = "";
                 txtNote.setText("");
+                currentStageName = "Không có";
 
                 loadDoctors();
                 updateTimeSlots();
+
 
             } else {
 

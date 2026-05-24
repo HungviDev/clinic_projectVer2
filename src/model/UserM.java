@@ -1,8 +1,9 @@
 package model;
 
 import java.util.Date;
+import java.sql.*;
 
-public class UserModel {
+public class UserM {
 
     private int id;
 
@@ -20,17 +21,19 @@ public class UserModel {
 
     private String email;
 
+    // private int roleId;
+
     // =====================================
     // CONSTRUCTOR RỖNG
     // =====================================
-    public UserModel() {
+    public UserM() {
 
     }
 
     // =====================================
     // CONSTRUCTOR ĐẦY ĐỦ
     // =====================================
-    public UserModel(
+    public UserM(
             int id,
             String fullName,
             String phone,
@@ -38,7 +41,9 @@ public class UserModel {
             Date birthDate,
             String address,
             String avatar,
-            String email
+            String email,
+            String roleId    
+
     ) {
 
         this.id = id;
@@ -49,6 +54,7 @@ public class UserModel {
         this.address = address;
         this.avatar = avatar;
         this.email = email;
+        // this.roleId = roleId;
     }
 
     // =====================================

@@ -1,57 +1,58 @@
 package ui.patient;
 
-import config.DBConnection; // Import kết nối Database của bạn
+import config.DBConnection;
 import controller.user.ServiceController;
-import dao.user.ServiceDAO;
 import ui.auth.MainDashboard;
+import model.Service;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.MatteBorder;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import model.Service;
+import java.text.DecimalFormat;
 
 public class ServicePatientPanel extends JPanel {
 
-    // ================= BẢNG MÀU PASTEL BLUE ĐỒNG BỘ =================
+    // ================= BẢNG MÀU PASTEL HIỆN ĐẠI =================
     private final Color COLOR_BG = new Color(248, 250, 252);      // Nền chính xám pha xanh nhạt
     private final Color TEXT_DARK = new Color(44, 62, 80);        // Chữ xanh than đậm
-    private final Color TEXT_MUTED = new Color(117, 117, 117);    // Chữ xám mờ
+    private final Color TEXT_MUTED = new Color(149, 165, 166);    // Chữ xám mờ
+    private final Color PRICE_COLOR = new Color(231, 76, 60);     // Đỏ cam nổi bật cho giá tiền
     
     private final Color HEADER_COLOR_PASTEL = new Color(133, 193, 233);  // Xanh biển pastel (Tiêu đề)
     
-    // Màu cho nút Đặt Lịch (Xanh lá pastel cho giống ảnh mẫu nhưng vẫn nhẹ nhàng)
+    // Màu cho nút Đặt Lịch
     private final Color BTN_BG_COLOR = new Color(162, 217, 139); 
     private final Color BTN_HOVER_COLOR = new Color(139, 195, 74);
     private final Color BTN_TEXT_COLOR = new Color(46, 125, 50);
 
     private JPanel listPanel;
+    private DecimalFormat moneyFormat = new DecimalFormat("#,### đ"); // Định dạng tiền tệ
 
     public ServicePatientPanel() {
         setLayout(new BorderLayout());
         setBackground(COLOR_BG);
 
         // --- Tiêu đề trang ---
-        JLabel lblTitle = new JLabel("Dịch vụ");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        JLabel lblTitle = new JLabel("Dịch vụ Nha khoa");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 26));
         lblTitle.setForeground(HEADER_COLOR_PASTEL);
-        lblTitle.setBorder(new EmptyBorder(25, 30, 15, 30));
+        lblTitle.setBorder(new EmptyBorder(25, 30, 20, 30));
         add(lblTitle, BorderLayout.NORTH);
 
         // --- Vùng chứa danh sách Dịch Vụ ---
         listPanel = new JPanel();
         listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
-        listPanel.setBackground(Color.WHITE); // Nền trắng để nổi bật các vạch chia
+        listPanel.setBackground(COLOR_BG); // Nền xám nhạt để nổi bật các thẻ trắng
+        listPanel.setBorder(new EmptyBorder(0, 30, 30, 30));
 
         JScrollPane scrollPane = new JScrollPane(listPanel);
         scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16); // Lăn chuột mượt hơn
+        scrollPane.getViewport().setBackground(COLOR_BG);
         add(scrollPane, BorderLayout.CENTER);
 
         // --- Load Dữ liệu từ Database ---
@@ -60,108 +61,118 @@ public class ServicePatientPanel extends JPanel {
 
     // ================= HÀM LẤY DỮ LIỆU TỪ DB =================
     private void loadServicesFromDatabase() {
-
         listPanel.removeAll();
 
         ServiceController controller = new ServiceController();
-
         var services = controller.getAllServices();
 
         if (services.isEmpty()) {
-
-            JLabel lblEmpty = new JLabel("Không có dịch vụ nào.");
+            JLabel lblEmpty = new JLabel("Hiện chưa có dịch vụ nào trên hệ thống.");
             lblEmpty.setFont(new Font("Segoe UI", Font.ITALIC, 16));
             lblEmpty.setForeground(TEXT_MUTED);
             lblEmpty.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            listPanel.add(Box.createRigidArea(new Dimension(0, 40)));
+            listPanel.add(Box.createRigidArea(new Dimension(0, 50)));
             listPanel.add(lblEmpty);
-
         } else {
-
             for (var s : services) {
-
+                // Đảm bảo model Service của bạn có hàm getPrice()
                 listPanel.add(
                         createServiceCard(
                                 s.getId(),
                                 s.getName(),
                                 s.getDescription(),
-                                s.getImage()
+                                s.getImage(),
+                                s.getPrice() // Thêm giá tiền vào đây
                         )
                 );
+                // Khoảng cách giữa các thẻ
+                listPanel.add(Box.createRigidArea(new Dimension(0, 15))); 
             }
         }
 
-        listPanel.add(Box.createVerticalGlue());
-
+        listPanel.add(Box.createVerticalGlue()); // Đẩy các thẻ lên trên cùng
         listPanel.revalidate();
         listPanel.repaint();
     }
 
-    // ================= HÀM TẠO 1 THẺ DỊCH VỤ =================
-    private JPanel createServiceCard(int serviceId, String name, String description, String imagePath) {
+    // ================= HÀM TẠO 1 THẺ DỊCH VỤ CẢI TIẾN =================
+    private JPanel createServiceCard(int serviceId, String name, String description, String imagePath, double price) {
         // Card Panel bọc ngoài cùng
-        JPanel card = new JPanel(new BorderLayout(20, 0)); // Khoảng cách giữa ảnh và chữ là 20px
+        JPanel card = new JPanel(new BorderLayout(20, 0));
         card.setBackground(Color.WHITE);
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140)); // Chiều cao tối đa
+        card.setMaximumSize(new Dimension(1000, 150)); // Giới hạn chiều cao thẻ
+        card.setAlignmentX(Component.LEFT_ALIGNMENT);
         
-        // Vạch phân cách màu xám mờ ở đáy
+        // Bo viền và tạo bóng nhẹ (Padding)
         card.setBorder(BorderFactory.createCompoundBorder(
-                new MatteBorder(0, 0, 1, 0, new Color(240, 240, 240)),
-                new EmptyBorder(20, 30, 20, 30) // Căn lề padding (Trên, Trái, Dưới, Phải)
+                new LineBorder(new Color(225, 230, 235), 1, true),
+                new EmptyBorder(15, 20, 15, 20)
         ));
 
-        // 1. Ảnh bên trái
+        // 1. KHOANG BÊN TRÁI: ẢNH DỊCH VỤ
         JLabel lblImage = new JLabel();
-        lblImage.setPreferredSize(new Dimension(100, 100)); // Kích thước ảnh vuông
+        lblImage.setPreferredSize(new Dimension(110, 110));
+        lblImage.setMinimumSize(new Dimension(110, 110));
+        lblImage.setMaximumSize(new Dimension(110, 110));
         lblImage.setHorizontalAlignment(SwingConstants.CENTER);
         
-        // Cố gắng load ảnh, nếu không có sẽ hiển thị màu nền thay thế
-        ImageIcon icon = loadScaledImage(imagePath, 100, 100);
+        // Load ảnh hoặc hiển thị icon mặc định nếu rỗng
+        ImageIcon icon = loadScaledImage(imagePath, 110, 110);
         if (icon != null) {
             lblImage.setIcon(icon);
         } else {
             lblImage.setOpaque(true);
-            lblImage.setBackground(new Color(230, 240, 250)); // Màu nền pastel nếu thiếu ảnh
-            lblImage.setText("📷");
-            lblImage.setFont(new Font("Segoe UI", Font.PLAIN, 40));
-            lblImage.setForeground(HEADER_COLOR_PASTEL);
+            lblImage.setBackground(new Color(240, 244, 248)); // Nền xám xanh nhạt
+            lblImage.setText("🦷"); // Icon cái răng làm mặc định
+            lblImage.setFont(new Font("Segoe UI", Font.PLAIN, 45));
         }
         card.add(lblImage, BorderLayout.WEST);
 
-        // 2. Nội dung chữ ở giữa
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.setBackground(Color.WHITE);
-        textPanel.setBorder(new EmptyBorder(10, 0, 0, 0)); // Đẩy text xuống một xíu cho cân đối
+        // 2. KHOANG Ở GIỮA: THÔNG TIN (TÊN & MÔ TẢ)
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setBackground(Color.WHITE);
+        infoPanel.setBorder(new EmptyBorder(5, 0, 0, 0));
         
         JLabel lblName = new JLabel(name);
-        lblName.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblName.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblName.setForeground(TEXT_DARK);
         
-        JLabel lblDesc = new JLabel("<html>" + (description != null ? description : "") + "</html>");
-        lblDesc.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        // Dùng HTML để giới hạn chiều rộng chữ và tự động xuống dòng
+        String safeDesc = (description != null) ? description : "Đang cập nhật mô tả...";
+        JLabel lblDesc = new JLabel("<html><div style='width: 350px; line-height: 1.5;'>" + safeDesc + "</div></html>");
+        lblDesc.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblDesc.setForeground(TEXT_MUTED);
+        lblDesc.setAlignmentY(Component.TOP_ALIGNMENT);
         
-        textPanel.add(lblName);
-        textPanel.add(Box.createRigidArea(new Dimension(0, 8))); // Khoảng cách giữa tên và mô tả
-        textPanel.add(lblDesc);
+        infoPanel.add(lblName);
+        infoPanel.add(Box.createRigidArea(new Dimension(0, 8)));
+        infoPanel.add(lblDesc);
         
-        card.add(textPanel, BorderLayout.CENTER);
+        card.add(infoPanel, BorderLayout.CENTER);
 
-        // 3. Nút "Đặt lịch" ở góc phải dưới
+        // 3. KHOANG BÊN PHẢI: GIÁ TIỀN & NÚT ĐẶT LỊCH
         JPanel actionPanel = new JPanel(new BorderLayout());
         actionPanel.setBackground(Color.WHITE);
+        actionPanel.setPreferredSize(new Dimension(160, 110)); // Cố định chiều rộng cột phải
         
+        // Giá tiền (Góc trên cùng bên phải)
+        JLabel lblPrice = new JLabel(moneyFormat.format(price));
+        lblPrice.setFont(new Font("Segoe UI", Font.BOLD, 19));
+        lblPrice.setForeground(PRICE_COLOR);
+        lblPrice.setHorizontalAlignment(SwingConstants.RIGHT);
+        
+        // Nút Đặt lịch (Góc dưới cùng bên phải)
         JButton btnBook = new JButton("Đặt lịch");
         btnBook.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnBook.setBackground(BTN_BG_COLOR);
         btnBook.setForeground(BTN_TEXT_COLOR);
         btnBook.setFocusPainted(false);
-        btnBook.setBorder(new EmptyBorder(8, 20, 8, 20)); // Padding cho nút
+        btnBook.setBorder(new EmptyBorder(10, 0, 10, 0));
         btnBook.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // Hiệu ứng Hover cho nút
+        // Hiệu ứng Hover
         btnBook.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -175,12 +186,9 @@ public class ServicePatientPanel extends JPanel {
             }
         });
 
-        // Xử lý sự kiện click
-        btnBook.addActionListener(e -> {
-            switchPage("BOOKING");
-        });
+        btnBook.addActionListener(e -> switchPage("BOOKING"));
         
-        // Add nút vào SOUTH của actionPanel để nó nằm ở dưới cùng bên phải
+        actionPanel.add(lblPrice, BorderLayout.NORTH);
         actionPanel.add(btnBook, BorderLayout.SOUTH);
         
         card.add(actionPanel, BorderLayout.EAST);
@@ -193,7 +201,7 @@ public class ServicePatientPanel extends JPanel {
         if (imagePath == null || imagePath.trim().isEmpty()) return null;
         
         try {
-            // Thử load ảnh từ Resources (src/img/...)
+            // Thử load ảnh từ Resources
             URL url = getClass().getResource(imagePath);
             if (url != null) {
                 ImageIcon originalIcon = new ImageIcon(url);
@@ -201,7 +209,7 @@ public class ServicePatientPanel extends JPanel {
                 return new ImageIcon(img);
             }
             
-            // Hoặc thử load ảnh trực tiếp từ đường dẫn máy tính (nếu lưu dạng D:/images/...)
+            // Hoặc thử load ảnh trực tiếp từ đường dẫn tuyệt đối
             ImageIcon originalIcon = new ImageIcon(imagePath);
             if (originalIcon.getIconWidth() > 0) {
                 Image img = originalIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
@@ -210,7 +218,7 @@ public class ServicePatientPanel extends JPanel {
         } catch (Exception e) {
             System.err.println("Không tìm thấy ảnh: " + imagePath);
         }
-        return null; // Trả về null nếu ảnh bị lỗi
+        return null; 
     }
 
     // ================= HÀM HỖ TRỢ CHUYỂN TRANG =================

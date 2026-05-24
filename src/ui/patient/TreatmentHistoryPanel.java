@@ -96,7 +96,8 @@ private void loadHistoryFromDatabase(int patientId) {
                             dateStr,
                             h.getDoctorName(),
                             h.getDiagnosis(),
-                            h.getTreatmentPlan()
+                            h.getTreatmentPlan(),
+                            h.getstatusStage()
                     )
             );
 
@@ -109,7 +110,7 @@ private void loadHistoryFromDatabase(int patientId) {
 }
 
     // ================= TẠO THẺ HỒ SƠ (CARD DESIGN) =================
-    private JPanel createRecordCard(String date, String doctorName, String diagnosis, String treatment) {
+    private JPanel createRecordCard(String date, String doctorName, String diagnosis, String treatment, String statusStage) {
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(Color.WHITE);
         card.setMaximumSize(new Dimension(800, 180));
@@ -143,15 +144,19 @@ private void loadHistoryFromDatabase(int patientId) {
         bodyPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
 
         // Bác sĩ
-        bodyPanel.add(createInfoRow("👨‍⚕️", "Bác sĩ phụ trách:", doctorName));
+        bodyPanel.add(createInfoRow("", "Bác sĩ phụ trách:", doctorName));
         bodyPanel.add(Box.createRigidArea(new Dimension(0, 12)));
         
         // Chẩn đoán
-        bodyPanel.add(createInfoRow("🩺", "Chẩn đoán:", diagnosis));
+        bodyPanel.add(createInfoRow("", "Chẩn đoán:", diagnosis));
         bodyPanel.add(Box.createRigidArea(new Dimension(0, 12)));
         
         // Kế hoạch điều trị
-        bodyPanel.add(createInfoRow("📋", "Kế hoạch điều trị:", treatment));
+        bodyPanel.add(createInfoRow("", "Kế hoạch điều trị:", treatment));
+        bodyPanel.add(Box.createRigidArea(new Dimension(0, 12)));
+
+        // Lộ trình điều trị hiện tại
+        bodyPanel.add(createInfoRow("", "Lộ trình điều trị hiện tại:", statusStage));
 
         card.add(bodyPanel, BorderLayout.CENTER);
 
@@ -176,7 +181,9 @@ private void loadHistoryFromDatabase(int patientId) {
         lblTitle.setPreferredSize(new Dimension(140, 20)); // Cố định chiều rộng để các dòng căn hàng dọc bằng nhau
 
         // Nội dung (Chữ đậm)
-        JLabel lblContent = new JLabel("<html><b>" + (content != null ? content : "Đang cập nhật...") + "</b></html>");
+String displayContent = (content != null && !content.trim().isEmpty()) ? content : "Không có";
+        JLabel lblContent = new JLabel("<html><b>" + displayContent + "</b></html>");
+        
         lblContent.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         lblContent.setForeground(TEXT_DARK);
 

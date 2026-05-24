@@ -1,6 +1,7 @@
 package controller.user;
 
 import model.User;
+import model.User;
 import service.UserService;
 import ui.auth.LoginForm;
 import ui.auth.MainDashboard;

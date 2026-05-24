@@ -6,9 +6,9 @@ import java.sql.DriverManager;
 public class DBConnection {
     public static Connection getConnection() {
         try {
-            String url = "jdbc:sqlserver://localhost:1433;databaseName=DentalClinicDB;encrypt=false";
+            String url = "jdbc:sqlserver://localhost:1433;databaseName=NhaKhoaVietAnh;encrypt=false";
             String user = "sa";
-            String pass = "123";
+            String pass = "1234";
 
             return DriverManager.getConnection(url, user, pass);
         } catch (Exception e) {

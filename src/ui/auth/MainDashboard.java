@@ -1,17 +1,16 @@
 package ui.auth;
 
-import ui.admin.UserView;
-import ui.auth.LoginForm;
+import controller.user.DashboardController;
+import java.awt.*;
+import java.sql.Date;
 
-import ui.patient.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-import controller.user.DashboardController;
-
-import java.awt.*;
-import ui.doctor.HomeDoctorPanel;
 import model.User;
+import ui.admin.UserView;
+import ui.doctor.HomeDoctorPanel;
+import ui.patient.*;
 
 public class MainDashboard extends JFrame {
 
@@ -26,6 +25,9 @@ public class MainDashboard extends JFrame {
     private CardLayout cardLayout;
     private DashboardController controller;
     private MyAppointmentsPanel appointmentsPanel;
+    
+    // Đưa lblUser ra làm biến toàn cục để có thể đổi tên sau khi cập nhật
+    private JLabel lblUser;
 
     public MainDashboard(DashboardController controller) {
         this.controller = controller;
@@ -35,11 +37,12 @@ public class MainDashboard extends JFrame {
         User user = controller.getUser();
 
         int userId = user.getId();
-
         String userName = user.getFullName();
-
+        String userPhone = user.getPhone();
+        String address =  user.getAddress();
+        Date birth_date = user.getBirthDate();
+        String email = user.getEmail();
         int role = user.getRoleId();
-
 
         setTitle("Hệ Thống Nha Khoa Việt Anh");
         setSize(1200, 700);
@@ -57,8 +60,8 @@ public class MainDashboard extends JFrame {
         lblLogo.setForeground(Color.WHITE);
         lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 26));
 
-        // Lấy tên người dùng từ DB theo ID
-        JLabel lblUser = new JLabel(
+        // Khởi tạo lblUser (Không dùng từ khóa JLabel ở đầu nữa)
+        lblUser = new JLabel(
             "Xin chào "
             + controller.getRoleName()
             + " "
@@ -83,13 +86,12 @@ public class MainDashboard extends JFrame {
         // ===== MENU CHUNG =====
         JButton btnHome = createMenuButton("Trang chủ");
         sidebar.add(btnHome);
-        sidebar.add(Box.createRigidArea(new Dimension(0, 10))); // Khoảng cách 10px
+        sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // ================= PATIENT (Role = 3) =================
         if (controller.isPatient()) {
             JButton btnService = createMenuButton("Dịch vụ");
             JButton btnBooking = createMenuButton("Đặt lịch");
-            JButton btnCart = createMenuButton("Giỏ hàng");
+            // JButton btnCart = createMenuButton("Giỏ hàng");
             JButton btnContact = createMenuButton("Liên hệ");
             JButton btnProfile = createMenuButton("Cá nhân");
 
@@ -97,15 +99,15 @@ public class MainDashboard extends JFrame {
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnBooking);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
-            sidebar.add(btnCart);
-            sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
+            // sidebar.add(btnCart);
+            // sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnContact);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnProfile);
 
             btnService.addActionListener(e -> controller.showPage("SERVICE"));
             btnBooking.addActionListener(e -> controller.showPage("BOOKING"));
-            btnCart.addActionListener(e -> controller.showPage("CART"));            
+            // btnCart.addActionListener(e -> controller.showPage("CART"));            
             btnContact.addActionListener(e -> controller.showPage("CONTACT"));
             btnProfile.addActionListener(e -> controller.showPage("PROFILE"));
         }
@@ -166,40 +168,38 @@ public class MainDashboard extends JFrame {
         contentPanel = new JPanel(cardLayout);
 
         // Nạp trước các màn hình giả lập
-        if(role == 3)
-        {contentPanel.add(new HomePatientPanel(userId,userName), "HOME");
-        // (Bệnh nhân)
-        contentPanel.add(new ServicePatientPanel(), "SERVICE");
-        contentPanel.add(new BookingPanel(userId), "BOOKING");
-        contentPanel.add(createPagePanel("GIỎ HÀNG", ""), "CART");
-        contentPanel.add(new ContactPanel(), "CONTACT");
-        String userPhone = "0365 851 224"; 
-        contentPanel.add(new ProfilePanel(userName, userPhone), "PROFILE");
-        contentPanel.add(new TreatmentHistoryPanel(userId), "MEDICAL_RECORD");
-        contentPanel.add(new PaymentHistoryPanel(userId), "PAYMENT_HISTORY");
-        appointmentsPanel =
-                new MyAppointmentsPanel(userId);
+        if(role == 3) {
+            contentPanel.add(new HomePatientPanel(userId,userName), "HOME");
+            // (Bệnh nhân)
+            contentPanel.add(new ServicePatientPanel(), "SERVICE");
+            contentPanel.add(new BookingPanel(userId), "BOOKING");
+            // contentPanel.add(createPagePanel("GIỎ HÀNG", ""), "CART");
+            contentPanel.add(new ContactPanel(), "CONTACT");
+            
+            contentPanel.add(new ProfilePanel(userName, userPhone), "PROFILE");
+            contentPanel.add(new TreatmentHistoryPanel(userId), "MEDICAL_RECORD");
+            contentPanel.add(new PaymentHistoryPanel(userId), "PAYMENT_HISTORY");   
+            contentPanel.add(new EditProfilePanel(userId, userName, userPhone,  birth_date, address, email), "EDIT_PROFILE"); 
+            appointmentsPanel = new MyAppointmentsPanel(userId);
 
-        contentPanel.add(
-                appointmentsPanel,
-                "SCHEDULE"
-        );
+            contentPanel.add(appointmentsPanel, "SCHEDULE");
         }
+        
         // (Bác sĩ)
-        if(role == 2)
-        {contentPanel.add(new HomeDoctorPanel(userName), "HOME");
-        contentPanel.add(createPagePanel("LỊCH KHÁM", "Danh sách lịch hẹn"), "SCHEDULE");
-        contentPanel.add(createPagePanel("HỒ SƠ BỆNH ÁN", "Quản lý bệnh án"), "MEDICAL");
-        contentPanel.add(createPagePanel("BỆNH NHÂN", "Danh sách bệnh nhân"), "PATIENTS");
+        if(role == 2) {
+            contentPanel.add(new HomeDoctorPanel(userName), "HOME");
+            contentPanel.add(createPagePanel("LỊCH KHÁM", "Danh sách lịch hẹn"), "SCHEDULE");
+            contentPanel.add(createPagePanel("HỒ SƠ BỆNH ÁN", "Quản lý bệnh án"), "MEDICAL");
+            contentPanel.add(createPagePanel("BỆNH NHÂN", "Danh sách bệnh nhân"), "PATIENTS");
         }
+        
         // (Admin)
-        if(role == 1)
-        {
-        contentPanel.add(new UserView(), "USERS");
-        contentPanel.add(createPagePanel("QUẢN LÝ BÁC SĨ", "CRUD Doctor"), "DOCTORS");
-        contentPanel.add(createPagePanel("QUẢN LÝ DỊCH VỤ", "CRUD Service"), "SERVICES_ADMIN");
-        contentPanel.add(createPagePanel("QUẢN LÝ ĐƠN HÀNG", "CRUD Order"), "ORDERS");
-        contentPanel.add(createPagePanel("THỐNG KÊ", "Biểu đồ doanh thu"), "STATISTICS");
+        if(role == 1) {
+            contentPanel.add(new UserView(), "USERS");
+            contentPanel.add(createPagePanel("QUẢN LÝ BÁC SĨ", "CRUD Doctor"), "DOCTORS");
+            contentPanel.add(createPagePanel("QUẢN LÝ DỊCH VỤ", "CRUD Service"), "SERVICES_ADMIN");
+            contentPanel.add(createPagePanel("QUẢN LÝ ĐƠN HÀNG", "CRUD Order"), "ORDERS");
+            contentPanel.add(createPagePanel("THỐNG KÊ", "Biểu đồ doanh thu"), "STATISTICS");
         }
 
         add(contentPanel, BorderLayout.CENTER);
@@ -210,15 +210,12 @@ public class MainDashboard extends JFrame {
         setVisible(true);
     }
 
-
-
     // Hàm này cho phép các Panel con gọi ngược ra để đổi trang
     public void showPage(String pageName) {
         if (cardLayout != null && contentPanel != null) {
             cardLayout.show(contentPanel, pageName);
         }
     }
-
 
     // ================= TẠO NÚT MENU BO GÓC =================
     private JButton createMenuButton(String text) {
@@ -277,12 +274,38 @@ public class MainDashboard extends JFrame {
     }
     
     public void refreshAppointments() {
-
         if (appointmentsPanel != null) {
-
             appointmentsPanel.loadData();
         }
     }
+    
+    // ================= HÀM LÀM MỚI DỮ LIỆU SAU KHI LƯU PROFILE =================
+    public void reloadUserData() {
+        // Lấy lại dữ liệu mới nhất từ DB
+        dao.user.UserDAO userDAO = new dao.user.UserDAO();
+        model.User updatedUser = userDAO.getUserById(controller.getUser().getId());
+
+        if (updatedUser != null) {
+            // Cập nhật text trên Header
+            lblUser.setText("Xin chào " + controller.getRoleName() + " " + updatedUser.getFullName());
+
+            // Ghi đè lại 2 trang Profile bằng Panel mới chứa dữ liệu vừa cập nhật
+            contentPanel.add(new ProfilePanel(updatedUser.getFullName(), updatedUser.getPhone()), "PROFILE");
+            contentPanel.add(new EditProfilePanel(
+                updatedUser.getId(), 
+                updatedUser.getFullName(), 
+                updatedUser.getPhone(), 
+                updatedUser.getBirthDate(), 
+                updatedUser.getAddress(), 
+                updatedUser.getEmail()
+            ), "EDIT_PROFILE");
+
+            // Làm mới giao diện
+            contentPanel.revalidate();
+            contentPanel.repaint();
+        }
+    }
+
     // Hàm main để test giao diện độc lập mà không cần phải qua trang đăng nhập
     public static void main(String[] args) {
         try {
@@ -292,8 +315,7 @@ public class MainDashboard extends JFrame {
         }
         
         SwingUtilities.invokeLater(() -> {
-            DashboardController controller =
-                    new DashboardController(1);
+            DashboardController controller = new DashboardController(1);
             new MainDashboard(controller);
         });
     }

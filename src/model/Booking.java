@@ -9,19 +9,22 @@ public class Booking {
     private int serviceId;
     private Timestamp appointmentDate;
     private String note;
+    private String statusStage;
 
     public Booking(
             int userId,
             int doctorId,
             int serviceId,
             Timestamp appointmentDate,
-            String note
+            String note,
+            String statusStage
     ) {
         this.userId = userId;
         this.doctorId = doctorId;
         this.serviceId = serviceId;
         this.appointmentDate = appointmentDate;
         this.note = note;
+        this.statusStage = statusStage;
     }
 
     public int getUserId() {
@@ -42,5 +45,13 @@ public class Booking {
 
     public String getNote() {
         return note;
+    }
+
+    public String getstatusStage() {
+        return statusStage;
+    }
+
+    public void setStatusStage(String statusStage) {
+        this.statusStage = statusStage;
     }
 }

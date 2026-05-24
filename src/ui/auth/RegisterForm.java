@@ -1,11 +1,10 @@
 package ui.auth;
 
+import controller.user.AuthController;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
-import controller.user.AuthController;
 
 
 
@@ -31,7 +30,6 @@ public class RegisterForm extends JFrame {
         getContentPane().setBackground(Color.WHITE);
         setResizable(false); 
 
-        // 👉 Xử lý khi nhấn nút X (Close) ở góc phải cửa sổ
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
@@ -262,7 +260,5 @@ public class RegisterForm extends JFrame {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi kết nối hoặc số điện thoại đã tồn tại!", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
         }
-
-
     }
 }

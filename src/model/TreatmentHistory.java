@@ -8,6 +8,7 @@ public class TreatmentHistory {
     private String doctorName;
     private String diagnosis;
     private String treatmentPlan;
+    private String statusStage;
 
     public TreatmentHistory() {
     }
@@ -42,5 +43,13 @@ public class TreatmentHistory {
 
     public void setTreatmentPlan(String treatmentPlan) {
         this.treatmentPlan = treatmentPlan;
+    }
+
+    public String getstatusStage() {
+        return statusStage;
+    }
+
+    public void setstatusStage(String statusStage) {
+        this.statusStage = statusStage;
     }
 }
