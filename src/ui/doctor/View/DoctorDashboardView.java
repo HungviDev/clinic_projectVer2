@@ -198,7 +198,7 @@ private JPanel createHeader(String doctorName) {
         ));
 
         panel.add(new StatCard(
-                "",
+                "BN đang điều trị",
                 lblPatients,
                 new Color(46, 204, 113)
         ));
@@ -209,11 +209,11 @@ private JPanel createHeader(String doctorName) {
                 new Color(243, 156, 18)
         ));
 
-        // panel.add(new StatCard(
-        //         "Doanh thu hôm nay",
-        //         lblRevenue,
-        //         new Color(155, 89, 182)
-        // ));
+        panel.add(new StatCard(
+                "Doanh thu hôm nay",
+                lblRevenue,
+                new Color(155, 89, 182)
+        ));
 
         return panel;
     }

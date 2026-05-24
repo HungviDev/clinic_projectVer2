@@ -2,17 +2,15 @@ package ui.doctor.Model;
 
 public class AppointmentModel {
     private int id;
-
     private String time;
     private String patientName;
     private String serviceName;
     private String status;
-
     public AppointmentModel() {
     }
 
     public AppointmentModel(
-        int id,
+            int id,
             String time,
             String patientName,
             String serviceName,
@@ -26,6 +24,10 @@ public class AppointmentModel {
     }
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getTime() {
@@ -58,5 +60,19 @@ public class AppointmentModel {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    // ==========================================
+    // Hiển thị object khi debug
+    // ==========================================
+    @Override
+    public String toString() {
+        return "AppointmentModel{" +
+                "id=" + id +
+                ", time='" + time + '\'' +
+                ", patientName='" + patientName + '\'' +
+                ", serviceName='" + serviceName + '\'' +
+                ", status='" + status + '\'' +
+                '}';
     }
 }

@@ -1,6 +1,5 @@
 package ui.patient;
 
-import config.*;
 import config.DBConnection;
 import controller.user.BookingController;
 import dao.user.DoctorDAO;
@@ -32,6 +31,11 @@ import java.time.format.DateTimeFormatter;
 // import model.Service;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+
+import ui.auth.MainDashboard;
 
 public class BookingPanel extends JPanel {
 

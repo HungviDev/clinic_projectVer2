@@ -1,3 +1,4 @@
+
 package dao.user;
 
 import config.DBConnection;
@@ -10,11 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TreatmentHistoryDAO {
-
     public List<TreatmentHistory> getByPatientId(int patientId) {
-
         List<TreatmentHistory> list = new ArrayList<>();
-
         String sql = "SELECT m.created_at, " +
                     "u.fullname AS doctor_name, " +
                     "m.diagnosis, " +
@@ -47,26 +45,17 @@ public class TreatmentHistoryDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, patientId);
-
             ResultSet rs = ps.executeQuery();
-
             while (rs.next()) {
-
                 TreatmentHistory t = new TreatmentHistory();
-
                 t.setCreatedAt(rs.getTimestamp("created_at"));
                 t.setDoctorName(rs.getString("doctor_name"));
                 t.setDiagnosis(rs.getString("diagnosis"));
                 t.setTreatmentPlan(rs.getString("treatment_plan"));
                 t.setstatusStage(rs.getString("stage_name"));
-
                 list.add(t);
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        } catch (Exception e) { e.printStackTrace(); }
         return list;
     }
 }

@@ -15,20 +15,13 @@ import ui.auth.LoginForm;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+import ui.admin.UserView;
+import ui.patient.*;
 import controller.user.DashboardController;
 import model.user.User;
 
 import java.awt.*;
 import ui.doctor.View.DoctorDashboardView;
-import ui.patient.BookingPanel;
-import ui.patient.ContactPanel;
-import ui.patient.EditProfilePanel;
-import ui.patient.HomePatientPanel;
-import ui.patient.MyAppointmentsPanel;
-import ui.patient.PaymentHistoryPanel;
-import ui.patient.ProfilePanel;
-import ui.patient.ServicePatientPanel;
-import ui.patient.TreatmentHistoryPanel;
 
 public class MainDashboard extends JFrame {
 

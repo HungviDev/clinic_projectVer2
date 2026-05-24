@@ -16,7 +16,7 @@ public class DoctorDAO {
         List<Doctor> list = new ArrayList<>();
 
         String sql =
-                "SELECT d.id, u.fullname " +
+                "SELECT DISTINCT u.id, u.fullname " +
                 "FROM doctors d " +
                 "JOIN users u ON d.user_id = u.id " +
                 "WHERE u.role_id = 2";
