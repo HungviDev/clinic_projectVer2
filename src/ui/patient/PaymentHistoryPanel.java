@@ -1,12 +1,14 @@
     package ui.patient;
 
-    import model.Payment;
     import service.PaymentService;
     import java.util.List;
     import javax.swing.*;
     import javax.swing.border.EmptyBorder;
     import javax.swing.border.MatteBorder;
-    import java.awt.*;
+
+import model.user.Payment;
+
+import java.awt.*;
     import java.text.DecimalFormat;
     import java.time.format.DateTimeFormatter;
     import javax.swing.border.LineBorder;

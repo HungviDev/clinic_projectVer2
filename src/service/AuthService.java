@@ -1,8 +1,7 @@
 package service;
 
 import dao.user.UserDAO;
-import model.User;
-// import model.UserModel;
+import model.user.User;
 
 public class AuthService {
 

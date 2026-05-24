@@ -1,6 +1,6 @@
 package controller.user;
 
-import model.AppointmentDetail;
+import model.user.AppointmentDetail;
 import service.AppointmentDetailService;
 
 public class AppointmentDetailController {

@@ -1,7 +1,6 @@
 package controller.user;
 
-import model.User;
-// import model.UserModel;
+import model.user.User;
 import service.AuthService;
 
 public class AuthController {

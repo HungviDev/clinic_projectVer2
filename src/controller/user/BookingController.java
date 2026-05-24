@@ -1,13 +1,13 @@
 package controller.user;
 
-import model.Booking;
-import model.Doctor;
-import model.Service;
 import service.BookingService;
 
 import java.util.List;
 
 import dao.user.BookingDAO;
+import model.user.Booking;
+import model.user.Doctor;
+import model.user.Service;
 
 public class BookingController {
 

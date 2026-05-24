@@ -1,56 +1,145 @@
 package ui.admin;
 
+import controller.admin.DoctorController;
+import global.GlobalData;
+import model.admin.DoctorModel;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-import java.util.List;
-import controller.admin.DoctorController;
-import model.DoctorModel;
 
 import java.awt.*;
+import java.util.List;
 
 public class DoctorView extends JPanel {
+        
+    private final Color BACKGROUND_COLOR =
+            new Color(240, 245, 250);
 
+    private final Color PRIMARY_COLOR =
+            new Color(0, 102, 204);
+
+    private final Color SUCCESS_COLOR =
+            new Color(46, 204, 113);
+
+    private final Color DANGER_COLOR =
+            new Color(231, 76, 60);
+
+    // =====================================
+    // TABLE
+    // =====================================
     private JTable table;
+
     private DefaultTableModel model;
-    private DoctorController DoctorController = new DoctorController();
+
+    // =====================================
+    // CONTROLLER
+    // =====================================
+    private DoctorController doctorController =
+            new DoctorController();
+
+    // =====================================
+    // CONSTRUCTOR
+    // =====================================
     public DoctorView() {
+
         setLayout(new BorderLayout());
-        setBackground(new Color(220, 235, 250));
+
+        setBackground(BACKGROUND_COLOR);
+
         // =====================================
-        // TITLE PANEL
+        // TOP PANEL
         // =====================================
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(new Color(220, 235, 250));
-        topPanel.setBorder(new EmptyBorder(20, 20, 10, 20));
+        JPanel topPanel =
+                new JPanel(new BorderLayout());
 
-        JLabel lblTitle = new JLabel("QUẢN LÝ BÁC SĨ");
+        topPanel.setBackground(BACKGROUND_COLOR);
 
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 30));
+        topPanel.setBorder(
+                new EmptyBorder(20, 20, 10, 20)
+        );
 
-        lblTitle.setForeground(new Color(0, 51, 102));
+        // =====================================
+        // TITLE
+        // =====================================
+        JLabel lblTitle =
+                new JLabel("QUẢN LÝ BÁC SĨ");
+
+        lblTitle.setFont(
+                new Font("Segoe UI", Font.BOLD, 30)
+        );
+
+        lblTitle.setForeground(PRIMARY_COLOR);
 
         topPanel.add(lblTitle, BorderLayout.WEST);
 
         // =====================================
         // BUTTON PANEL
         // =====================================
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel buttonPanel =
+                new JPanel(new FlowLayout(
+                        FlowLayout.RIGHT,
+                        10,
+                        0
+                ));
 
-        buttonPanel.setBackground(new Color(220, 235, 250));
+        buttonPanel.setBackground(BACKGROUND_COLOR);
 
-        JButton btnAdd = createButton("Thêm");
-        btnAdd.setForeground(Color.BLACK);
-        JButton btnUpdate = createButton("Sửa");
-        btnUpdate.setForeground(Color.BLACK);
-        JButton btnDelete = createButton("Xóa");
-        btnDelete.setForeground(Color.BLACK);
-        JButton btnRefresh = createButton("Làm mới");
-        btnRefresh.setForeground(Color.BLACK);
+        JButton btnAdd =
+                createButton(
+                        "Thêm",
+                        SUCCESS_COLOR
+                );
+
+        JButton btnUpdate =
+                createButton(
+                        "Sửa",
+                        PRIMARY_COLOR
+                );
+
+        JButton btnDelete =
+                createButton(
+                        "Xóa",
+                        DANGER_COLOR
+                );
+
         buttonPanel.add(btnAdd);
+
         buttonPanel.add(btnUpdate);
+
         buttonPanel.add(btnDelete);
-        buttonPanel.add(btnRefresh);
+
+        // =====================================
+        // DELETE EVENT
+        // =====================================
+        btnDelete.addActionListener(e -> {
+
+            int row = table.getSelectedRow();
+
+            if (row == -1) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Vui lòng chọn bác sĩ"
+                );
+
+                return;
+            }
+
+            int id = Integer.parseInt(
+                    table.getModel()
+                            .getValueAt(row, 0)
+                            .toString()
+            );
+
+            int confirm =
+                    JOptionPane.showConfirmDialog(
+                            this,
+                            "Bạn có chắc muốn xóa?",
+                            "Xác nhận",
+                            JOptionPane.YES_NO_OPTION
+                    );
+        });
 
         topPanel.add(buttonPanel, BorderLayout.EAST);
 
@@ -58,93 +147,170 @@ public class DoctorView extends JPanel {
         // TABLE
         // =====================================
         String[] columns = {
+
                 "ID",
+
                 "Họ và tên",
+
                 "Số điện thoại",
+
                 "Mật khẩu",
+
                 "Ngày sinh",
+
                 "Địa chỉ",
+
                 "Avatar",
+
                 "Email",
+
                 "Chuyên ngành",
+
                 "Năm kinh nghiệm"
         };
 
-        model = new DefaultTableModel(columns, 0);
+        model =
+                new DefaultTableModel(columns, 0);
 
         table = new JTable(model);
 
-        table.setRowHeight(35);
+        // =====================================
+        // TABLE STYLE
+        // =====================================
+        table.setRowHeight(38);
 
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        table.getTableHeader().setFont(
-                new Font("Segoe UI", Font.BOLD, 15)
-        );
-
-        table.getTableHeader().setBackground(
-                new Color(0, 76, 153)
+        table.setFont(
+                new Font("Segoe UI", Font.PLAIN, 14)
         );
 
         table.setSelectionBackground(
                 new Color(184, 207, 229)
         );
 
-        JScrollPane scrollPane = new JScrollPane(table);
+        table.setGridColor(
+                new Color(220, 220, 220)
+        );
 
-        scrollPane.setBorder(new EmptyBorder(10, 20, 20, 20));
+        table.getTableHeader().setFont(
+                new Font("Segoe UI", Font.BOLD, 15)
+        );
+
+        table.getTableHeader().setBackground(
+                PRIMARY_COLOR
+        );
+
+        table.getTableHeader().setForeground(
+                Color.WHITE
+        );
+
+        table.getTableHeader().setReorderingAllowed(false);
+
+        JScrollPane scrollPane =
+                new JScrollPane(table);
+
+        scrollPane.setBorder(
+                new EmptyBorder(10, 20, 20, 20)
+        );
+
+        // =====================================
+        // LOAD DATA
+        // =====================================
+        loadAllDoctor();
+
+        // =====================================
+        // ADD COMPONENT
+        // =====================================
         add(topPanel, BorderLayout.NORTH);
 
         add(scrollPane, BorderLayout.CENTER);
-        loadAllUser();
-        btnRefresh.addActionListener(e -> loadAllUser());
     }
 
-    private JButton createButton(String text) {
+    // =====================================
+    // CREATE BUTTON
+    // =====================================
+    private JButton createButton(
+            String text,
+            Color color
+    ) {
 
-        JButton button = new JButton(text);
+        JButton button =
+                new JButton(text);
 
-        button.setFocusPainted(false);
-
-        button.setBackground(new Color(0, 76, 153));
+        button.setBackground(color);
 
         button.setForeground(Color.WHITE);
 
-        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setFocusPainted(false);
 
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setBorderPainted(false);
 
-        button.setPreferredSize(new Dimension(110, 40));
+        button.setCursor(
+                new Cursor(Cursor.HAND_CURSOR)
+        );
+
+        button.setFont(
+                new Font("Segoe UI", Font.BOLD, 14)
+        );
+
+        button.setPreferredSize(
+                new Dimension(120, 42)
+        );
 
         return button;
     }
-     private void loadAllUser() {
 
-        model.setRowCount(0);
+    // =====================================
+    // LOAD ALL DOCTOR
+    // =====================================
+    public void loadAllDoctor() {
 
-        List<DoctorModel> userList =
-                DoctorController.getAllDoctor();
-        System.out.println("SIZE: " + userList.size());
-        userList.forEach(user -> {
-            model.addRow(new Object[]{
+        try {
 
-                    user.getId(),
+            model.setRowCount(0);
 
-                    user.getFullName(),
+            List<DoctorModel> doctorList =
+                    doctorController.getAllDoctor();
 
-                    user.getPhone(),
+            System.out.println(
+                    "SIZE: " + doctorList.size()
+            );
 
-                    user.getPassword(),
+            doctorList.forEach(user -> {
 
-                    user.getBirthDate(),
+                model.addRow(new Object[]{
 
-                    user.getAddress(),
+                        user.getId(),
 
-                    user.getAvatar(),
-                    user.getEmail(),
-                    user.getSpecialization(),
-                    user.getExperience()
+                        user.getFullName(),
+
+                        user.getPhone(),
+
+                        user.getPassword(),
+
+                        user.getBirthDate(),
+
+                        user.getAddress(),
+
+                        user.getAvatar(),
+
+                        user.getEmail(),
+
+                        user.getSpecialization(),
+
+                        user.getExperience()
+                });
+
+                System.out.println(user);
             });
-        });
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Lỗi load dữ liệu"
+            );
+        }
     }
 }

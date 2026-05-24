@@ -1,7 +1,7 @@
 package dao.user;
 
 import config.DBConnection;
-import model.Payment;
+import model.user.Payment;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

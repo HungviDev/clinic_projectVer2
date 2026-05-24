@@ -1,12 +1,13 @@
 package controller.user;
 
-import model.User;
-import model.User;
+
 import service.UserService;
 import ui.auth.LoginForm;
 import ui.auth.MainDashboard;
 
 import javax.swing.*;
+
+import model.user.User;
 
 public class DashboardController {
 

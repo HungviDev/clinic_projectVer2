@@ -1,24 +1,52 @@
 package ui.admin;
 
+import controller.admin.TreatmentDetailController;
+import controller.admin.UserController;
+import model.admin.TreatmentDetail;
+import model.admin.UserModel;
+import ui.admin.form.DetailForm;
+import ui.admin.form.UserAddForm;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
-import controller.admin.UserController;
-import model.User;
+
 // import model.UserModel;
-import ui.admin.form.UserAddForm;
 
 import java.awt.*;
 import java.util.List;
 
 public class UserView extends JPanel {
 
+    // =====================================
+    // COLOR
+    // =====================================
+    private final Color BACKGROUND_COLOR =
+            new Color(240, 245, 250);
+
+    private final Color PRIMARY_COLOR =
+            new Color(0, 102, 204);
+
+    private final Color SUCCESS_COLOR =
+            new Color(46, 204, 113);
+
+    private final Color WARNING_COLOR =
+            new Color(241, 196, 15);
+
+    private final Color DANGER_COLOR =
+            new Color(231, 76, 60);
+    TreatmentDetailController treatmentDetail = new TreatmentDetailController();
+    // =====================================
+    // TABLE
+    // =====================================
     private JTable table;
 
     private DefaultTableModel model;
-        private final Color SIDEBAR_COLOR = new Color(214, 234, 248); // Xanh biển pastel (sáng, nhạt)
 
+    // =====================================
+    // CONTROLLER
+    // =====================================
     private UserController userController =
             new UserController();
 
@@ -29,22 +57,23 @@ public class UserView extends JPanel {
 
         setLayout(new BorderLayout());
 
-        setBackground(new Color(220, 235, 250));
+        setBackground(BACKGROUND_COLOR);
 
         // =====================================
-        // TITLE PANEL
+        // TOP PANEL
         // =====================================
         JPanel topPanel =
                 new JPanel(new BorderLayout());
 
-        topPanel.setBackground(
-                new Color(220, 235, 250)
-        );
+        topPanel.setBackground(BACKGROUND_COLOR);
 
         topPanel.setBorder(
                 new EmptyBorder(20, 20, 10, 20)
         );
 
+        // =====================================
+        // TITLE
+        // =====================================
         JLabel lblTitle =
                 new JLabel("QUẢN LÝ NGƯỜI DÙNG");
 
@@ -52,9 +81,7 @@ public class UserView extends JPanel {
                 new Font("Segoe UI", Font.BOLD, 30)
         );
 
-        lblTitle.setForeground(
-                new Color(0, 51, 102)
-        );
+        lblTitle.setForeground(PRIMARY_COLOR);
 
         topPanel.add(lblTitle, BorderLayout.WEST);
 
@@ -62,23 +89,35 @@ public class UserView extends JPanel {
         // BUTTON PANEL
         // =====================================
         JPanel buttonPanel =
-                new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                new JPanel(new FlowLayout(
+                        FlowLayout.RIGHT,
+                        10,
+                        0
+                ));
 
-        buttonPanel.setBackground(
-                SIDEBAR_COLOR
-        );
+        buttonPanel.setBackground(BACKGROUND_COLOR);
+        JButton btnAdd =
+                createButton(
+                        "Thêm",
+                        SUCCESS_COLOR
+                );
+         JButton btnDetail =
+                createButton(
+                        "Chi tiết",
+                        SUCCESS_COLOR
+                );
+        JButton btnUpdate =
+                createButton(
+                        "Sửa",
+                        PRIMARY_COLOR
+                );
 
-        JButton btnAdd = createButton("Thêm");
+        JButton btnDelete =
+                createButton(
+                        "Xóa",
+                        DANGER_COLOR
+                );
 
-        JButton btnUpdate = createButton("Sửa");
-
-        JButton btnDelete = createButton("Xóa");
-
-        btnAdd.setBackground(SIDEBAR_COLOR);
-
-        btnUpdate.setBackground(SIDEBAR_COLOR);
-
-        btnDelete.setBackground(SIDEBAR_COLOR);
 
 
         buttonPanel.add(btnAdd);
@@ -87,6 +126,7 @@ public class UserView extends JPanel {
 
         buttonPanel.add(btnDelete);
 
+        buttonPanel.add(btnDetail);
 
         // =====================================
         // ADD EVENT
@@ -102,10 +142,87 @@ public class UserView extends JPanel {
 
             form.setVisible(true);
         });
+        btnDetail.addActionListener(e->{
+                
+            int row = table.getSelectedRow();
+                if (row != -1) {
 
+                        // Lấy id ở cột đầu tiên (cột 0)
+                        int id = Integer.parseInt(
+                                table.getValueAt(row, 0).toString()
+                        );
+                        System.out.println(id+"id vừa click dc");
+                        JFrame parentFrame =
+                        (JFrame) SwingUtilities
+                                        .getWindowAncestor(this);
+                        TreatmentDetailController controller =
+                                new TreatmentDetailController();
+                        
+                        TreatmentDetail treatmentDetail =
+                                controller.getDetail(id);
+                        System.out.println(treatmentDetail.getPatientName());
+                        DetailForm form =
+                                new DetailForm(parentFrame,treatmentDetail);
+                        form.setVisible(true);
+                }
+
+        });
         // =====================================
-        // REFRESH EVENT
+        // DELETE EVENT
         // =====================================
+        btnDelete.addActionListener(e -> {
+
+            int row = table.getSelectedRow();
+
+            if (row == -1) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Vui lòng chọn người dùng"
+                );
+
+                return;
+            }
+
+            int id = Integer.parseInt(
+                    table.getModel()
+                            .getValueAt(row, 0)
+                            .toString()
+            );
+
+            int confirm =
+                    JOptionPane.showConfirmDialog(
+                            this,
+                            "Bạn có chắc muốn xóa?",
+                            "Xác nhận",
+                            JOptionPane.YES_NO_OPTION
+                    );
+
+            if (confirm == JOptionPane.YES_OPTION) {
+
+                boolean result =
+                        userController.deleteUser(id);
+
+                if (result) {
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Xóa thành công"
+                    );
+
+                    loadAllUser();
+
+                } else {
+
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Xóa thất bại"
+                    );
+                }
+            }
+        });
+
+
 
         topPanel.add(buttonPanel, BorderLayout.EAST);
 
@@ -125,9 +242,6 @@ public class UserView extends JPanel {
                 "Ngày sinh",
 
                 "Địa chỉ",
-
-                "Avatar",
-
                 "Email"
         };
 
@@ -136,10 +250,21 @@ public class UserView extends JPanel {
 
         table = new JTable(model);
 
-        table.setRowHeight(35);
+        // =====================================
+        // TABLE STYLE
+        // =====================================
+        table.setRowHeight(38);
 
         table.setFont(
                 new Font("Segoe UI", Font.PLAIN, 14)
+        );
+
+        table.setSelectionBackground(
+                new Color(184, 207, 229)
+        );
+
+        table.setGridColor(
+                new Color(220, 220, 220)
         );
 
         table.getTableHeader().setFont(
@@ -147,12 +272,14 @@ public class UserView extends JPanel {
         );
 
         table.getTableHeader().setBackground(
-                SIDEBAR_COLOR
+                PRIMARY_COLOR
         );
 
-        table.setSelectionBackground(
-                new Color(184, 207, 229)
+        table.getTableHeader().setForeground(
+                Color.WHITE
         );
+
+        table.getTableHeader().setReorderingAllowed(false);
 
         JScrollPane scrollPane =
                 new JScrollPane(table);
@@ -172,56 +299,61 @@ public class UserView extends JPanel {
         add(topPanel, BorderLayout.NORTH);
 
         add(scrollPane, BorderLayout.CENTER);
-              btnDelete.addActionListener(e ->{
-            int row = table.getSelectedRow();
-            int id = Integer.parseInt(table.getModel().getValueAt(row, 0).toString());
-            userController.deleteUser(id);
-            loadAllUser();
-        });
-      
     }
 
     // =====================================
     // CREATE BUTTON
     // =====================================
-    private JButton createButton(String text) {
+    private JButton createButton(
+            String text,
+            Color color
+    ) {
 
-        JButton button = new JButton(text);
+        JButton button =
+                new JButton(text);
+
+        button.setBackground(color);
+
+        button.setForeground(Color.WHITE);
 
         button.setFocusPainted(false);
 
-        button.setBackground(
-                new Color(0, 76, 153)
-        );
-
-        button.setForeground(Color.BLACK);
-
-        button.setFont(
-                new Font("Segoe UI", Font.BOLD, 14)
-        );
+        button.setBorderPainted(false);
 
         button.setCursor(
                 new Cursor(Cursor.HAND_CURSOR)
         );
 
+        button.setFont(
+                new Font("Segoe UI", Font.BOLD, 14)
+        );
+
         button.setPreferredSize(
-                new Dimension(110, 40)
+                new Dimension(120, 42)
         );
 
         return button;
     }
 
+    // =====================================
+    // LOAD ALL USER
+    // =====================================
     public void loadAllUser() {
 
         try {
+
+            // XÓA DỮ LIỆU CŨ
             model.setRowCount(0);
-            List<User> userList =
+
+            // LẤY DỮ LIỆU DATABASE
+            List<UserModel> userList =
                     userController.getAllUsers();
 
             System.out.println(
                     "SIZE: " + userList.size()
             );
 
+            // THÊM VÀO TABLE
             userList.forEach(user -> {
 
                 model.addRow(new Object[]{
@@ -237,9 +369,6 @@ public class UserView extends JPanel {
                         user.getBirthDate(),
 
                         user.getAddress(),
-
-                        user.getAvatar(),
-
                         user.getEmail()
                 });
 
@@ -256,7 +385,12 @@ public class UserView extends JPanel {
             );
         }
     }
-    private boolean deleteUser(int id){
+
+    // =====================================
+    // DELETE USER
+    // =====================================
+    private boolean deleteUser(int id) {
+
         return userController.deleteUser(id);
-    } 
+    }
 }

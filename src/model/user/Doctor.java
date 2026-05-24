@@ -1,4 +1,4 @@
-package model;
+package model.user;
 
 public class Doctor {
     private int id;

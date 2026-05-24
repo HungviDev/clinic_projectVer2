@@ -2,8 +2,10 @@ package ui.patient;
 
 import config.DBConnection;
 import controller.user.ServiceController;
+import dao.user.ServiceDAO;
+import model.user.Service;
 import ui.auth.MainDashboard;
-import model.Service;
+// import model.Service;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -13,6 +15,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class ServicePatientPanel extends JPanel {
 

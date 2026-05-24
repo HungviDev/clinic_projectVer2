@@ -1,8 +1,8 @@
-package model;
+package model.admin;
 
 import java.sql.Date; // SỬA LỖI Ở ĐÂY: Đổi từ java.util.Date thành java.sql.Date
 
-public class DoctorModel extends User {
+public class DoctorModel extends UserModel {
 
     private String specialization;
 
@@ -39,7 +39,6 @@ public class DoctorModel extends User {
                 fullName,
                 phone,
                 password,
-                2,          // <--- THÊM SỐ 2 VÀO ĐÂY (Nằm đúng vị trí roleId của file User.java)
                 birthDate,
                 address,
                 avatar,

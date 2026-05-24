@@ -1,10 +1,8 @@
 package ui.patient;
 
 import config.*;
-
-
+import model.user.Appointment;
 import ui.auth.MainDashboard;
-import model.Appointment;
 import service.AppointmentService;
 
 import java.util.List;

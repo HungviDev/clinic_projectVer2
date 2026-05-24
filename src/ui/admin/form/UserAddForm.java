@@ -3,8 +3,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import controller.admin.UserController;
-import model.User;
-// import model.UserModel;
+import model.admin.UserModel;
 import ui.admin.UserView;
 
 import java.awt.*;
@@ -225,7 +224,7 @@ private void insertUser() {
         // =====================================
         // SET MODEL
         // =====================================
-        User user = new User();
+        UserModel user = new UserModel();
 
         user.setFullName(fullName);
 

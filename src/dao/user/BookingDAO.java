@@ -1,7 +1,7 @@
 package dao.user;
 
 import config.DBConnection;
-import model.Booking;
+import model.user.Booking;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,8 +13,8 @@ public class BookingDAO {
 
         String sql =
                 "INSERT INTO appointments " +
-                "(user_id, doctor_id, service_id, appointment_date, status, note, created_at, status_stage) " +
-                "VALUES (?, ?, ?, ?, 'Pending', ?, GETDATE(), ?)";
+                "(user_id, doctor_id, service_id, appointment_date, status, note, created_at) " +
+                "VALUES (?, ?, ?, ?, 'Pending', ?, GETDATE())";
 
         try (
                 Connection conn = DBConnection.getConnection();
@@ -26,7 +26,7 @@ public class BookingDAO {
             ps.setInt(3, booking.getServiceId());
             ps.setTimestamp(4, booking.getAppointmentDate());
             ps.setString(5, booking.getNote());
-            ps.setString(6, booking.getstatusStage());
+            
 
             return ps.executeUpdate() > 0;
 
@@ -38,15 +38,14 @@ public class BookingDAO {
     }
 
     public String getNextTreatmentStageFromDB(int userId, int serviceId) {
-        String sql = "SELECT TOP 1 ts.stage_name, tp.title " +
-                     "FROM treatment_stages ts " +
-                     "JOIN treatment_plans tp ON ts.treatment_plan_id = tp.id " +
-                     "JOIN medical_records mr ON tp.medical_record_id = mr.id " +
-                     "WHERE mr.user_id = ? " +
-                     "  AND mr.service_id = ? " + 
-                     "  AND ts.status IN (N'In Progress', N'Pending') " +
-                     "  AND tp.status != N'Completed' " +
-                     "ORDER BY ts.sequence_order ASC";;
+        String sql = "SELECT TOP 1 ts.stage_name, tr.title " +
+                    "FROM treatment_stages ts " +
+                    "JOIN treatment_routes tr ON ts.treatment_route_id = tr.id " +
+                    "JOIN medical_records mr ON mr.treatment_route_id = tr.id " +
+                    "WHERE mr.user_id = ? " +
+                    "  AND mr.service_id = ? " + 
+                    "  AND ts.status IN ( N'Chưa thực hiện') " +
+                    "ORDER BY ts.sequence_order ASC";
                      
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

@@ -9,17 +9,16 @@ import java.util.List;
 
 import config.DBConnection;
 import dao.user.UserDAO;
-import model.User;
-import model.User;
+import model.admin.UserModel;
 
 public class UserController {
 
     // =====================================
     // GET ALL USERS
     // =====================================
-    public List<User> getAllUsers() {
+    public List<UserModel> getAllUsers() {
 
-        List<User> userList = new ArrayList<>();
+        List<UserModel> userList = new ArrayList<>();
 
         try {
 
@@ -33,7 +32,7 @@ public class UserController {
 
             while (rs.next()) {
 
-                User user = new User();
+                UserModel user = new UserModel();
 
                 user.setId(
                         rs.getInt("id")
@@ -81,7 +80,7 @@ public class UserController {
 
         return userList;
     }
-    public boolean insertUser(User user) {
+    public boolean insertUser(UserModel user) {
 
     try {
 
@@ -170,7 +169,7 @@ public boolean deleteUser(int id) {
             return false;
         }
     }
-     public boolean updateUser(User user) {
+     public boolean updateUser(UserModel user) {
         try {
             Connection conn = DBConnection.getConnection();
             String sql = """
@@ -228,8 +227,43 @@ public boolean deleteUser(int id) {
             return false;
         }
     }
+    public int countPatients() {
 
-    public boolean updateProfile(int userId, String fullName, String phone, String birthDateStr, String address, String email) throws IllegalArgumentException {
+        int total = 0;
+
+        try {
+
+                Connection conn =
+                        DBConnection.getConnection();
+
+                String sql =
+                        "SELECT COUNT(*) AS total FROM users WHERE role_id = 3";
+
+                PreparedStatement ps =
+                        conn.prepareStatement(sql);
+
+                ResultSet rs =
+                        ps.executeQuery();
+
+                if (rs.next()) {
+
+                total = rs.getInt("total");
+                }
+
+                rs.close();
+
+                ps.close();
+
+                conn.close();
+
+        } catch (Exception e) {
+
+                e.printStackTrace();
+        }
+
+        return total;
+        }
+          public boolean updateProfile(int userId, String fullName, String phone, String birthDateStr, String address, String email) throws IllegalArgumentException {
         java.sql.Date sqlDate = null;
         
         // Kiểm tra và ép kiểu chuỗi ngày tháng sang java.sql.Date
@@ -242,4 +276,99 @@ public boolean deleteUser(int id) {
         return userdao.updateProfile(userId, fullName, phone, sqlDate, address, email);
     }
 
+        // =====================================
+        // COUNT DOCTORS
+        // =====================================
+        public int countDoctors() {
+
+        int total = 0;
+
+        try {
+
+                Connection conn =
+                        DBConnection.getConnection();
+
+                String sql =
+                        "SELECT COUNT(*) AS total FROM users WHERE role_id = 2";
+
+                PreparedStatement ps =
+                        conn.prepareStatement(sql);
+
+                ResultSet rs =
+                        ps.executeQuery();
+
+                if (rs.next()) {
+
+                total = rs.getInt("total");
+                }
+
+                rs.close();
+
+                ps.close();
+
+                conn.close();
+
+        } catch (Exception e) {
+
+                e.printStackTrace();
+        }
+
+        return total;
+        }
+     public UserModel getUserByPhone(String phone) {
+
+    UserModel user = null;
+
+    try {
+
+        Connection conn = DBConnection.getConnection();
+
+        String sql = "SELECT * FROM users WHERE phone = ? AND role_id = 3";
+
+        PreparedStatement ps = conn.prepareStatement(sql);
+
+        ps.setString(1, phone);
+
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+
+            user = new UserModel();
+
+            user.setId(rs.getInt("id"));
+            user.setFullName(rs.getString("fullname"));
+            user.setPhone(rs.getString("phone"));
+            user.setPassword(rs.getString("password"));
+            user.setBirthDate(rs.getDate("birth_date"));
+            user.setAddress(rs.getString("address"));
+            user.setAvatar(rs.getString("avatar"));
+            user.setEmail(rs.getString("email"));
+        }
+
+        rs.close();
+        ps.close();
+        conn.close();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return user;
+}
+        public static void main(String[] args) {
+            UserController controller = new UserController();
+
+        UserModel user = controller.getUserByPhone("03377928757");
+
+        if (user != null) {
+
+                System.out.println("ID: " + user.getId());
+                System.out.println("Name: " + user.getFullName());
+                System.out.println("Phone: " + user.getPhone());
+
+        } else {
+
+                System.out.println("Không tìm thấy user");
+    }
+        }
 }
