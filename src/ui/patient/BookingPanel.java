@@ -1,13 +1,7 @@
 package ui.patient;
 
-import config.*;
 import config.DBConnection;
 import controller.user.BookingController;
-import ui.auth.MainDashboard;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -17,12 +11,13 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import model.Booking;
 import model.Doctor;
 import model.Service;
+import ui.auth.MainDashboard;
 
 public class BookingPanel extends JPanel {
 

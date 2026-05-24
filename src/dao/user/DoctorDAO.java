@@ -1,13 +1,12 @@
 package dao.user;
 
 import config.DBConnection;
-import model.Doctor;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import model.Doctor;
 
 public class DoctorDAO {
 
@@ -16,7 +15,7 @@ public class DoctorDAO {
         List<Doctor> list = new ArrayList<>();
 
         String sql =
-                "SELECT d.id, u.fullname " +
+                "SELECT DISTINCT u.id, u.fullname " +
                 "FROM doctors d " +
                 "JOIN users u ON d.user_id = u.id " +
                 "WHERE u.role_id = 2";

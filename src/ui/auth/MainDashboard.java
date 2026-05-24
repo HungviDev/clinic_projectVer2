@@ -1,17 +1,15 @@
 package ui.auth;
 
-import ui.admin.UserView;
-import ui.auth.LoginForm;
-
-import ui.patient.*;
+import controller.user.DashboardController;
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
-import controller.user.DashboardController;
-
-import java.awt.*;
-import ui.doctor.HomeDoctorPanel;
 import model.User;
+import ui.admin.UserView;
+import ui.doctor.View.AppointmentView; //đây
+import ui.doctor.View.DoctorDashboardView;
+import ui.doctor.View.MedicalRecordView; //đây
+import ui.patient.*;
 
 public class MainDashboard extends JFrame {
 
@@ -33,11 +31,13 @@ public class MainDashboard extends JFrame {
         controller.setView(this);
 
         User user = controller.getUser();
+        
 
         int userId = user.getId();
+        
 
         String userName = user.getFullName();
-
+    
         int role = user.getRoleId();
 
 
@@ -112,18 +112,22 @@ public class MainDashboard extends JFrame {
 
         // ================= DOCTOR (Role = 2) =================
         if(controller.isDoctor()) {
-            JButton btnSchedule = createMenuButton("📅 Lịch khám");
-            JButton btnMedical = createMenuButton("📋 Hồ sơ bệnh án");
-            JButton btnPatients = createMenuButton("🧑‍🤝‍🧑 Bệnh nhân");
+            JButton btnSchedule = createMenuButton("Lịch khám");
+            JButton btnMedical = createMenuButton("Hồ sơ bệnh án");
+            JButton btnTreatment = createMenuButton("Lộ trình điều trị");
+            JButton btnPatients = createMenuButton("Bệnh nhân");
 
             sidebar.add(btnSchedule);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnMedical);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
+            sidebar.add(btnTreatment);
+            sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnPatients);
 
             btnSchedule.addActionListener(e -> cardLayout.show(contentPanel, "SCHEDULE"));
             btnMedical.addActionListener(e -> cardLayout.show(contentPanel, "MEDICAL"));
+            btnTreatment.addActionListener(e -> cardLayout.show(contentPanel, "TREATMENT"));
             btnPatients.addActionListener(e -> cardLayout.show(contentPanel, "PATIENTS"));
         }
 
@@ -187,10 +191,11 @@ public class MainDashboard extends JFrame {
         }
         // (Bác sĩ)
         if(role == 2)
-        {contentPanel.add(new HomeDoctorPanel(userName), "HOME");
-        contentPanel.add(createPagePanel("LỊCH KHÁM", "Danh sách lịch hẹn"), "SCHEDULE");
-        contentPanel.add(createPagePanel("HỒ SƠ BỆNH ÁN", "Quản lý bệnh án"), "MEDICAL");
-        contentPanel.add(createPagePanel("BỆNH NHÂN", "Danh sách bệnh nhân"), "PATIENTS");
+        {
+            contentPanel.add(new DoctorDashboardView(userId,userName), "HOME");
+            contentPanel.add(new AppointmentView(userId), "SCHEDULE"); //đây
+            contentPanel.add(new MedicalRecordView(userId), "MEDICAL"); //đây
+            contentPanel.add(createPagePanel("BỆNH NHÂN", "Danh sách bệnh nhân"), "PATIENTS");
         }
         // (Admin)
         if(role == 1)
