@@ -1,7 +1,10 @@
 package ui.admin;
 
+import controller.admin.TreatmentDetailController;
 import controller.admin.UserController;
+import model.admin.TreatmentDetail;
 import model.admin.UserModel;
+import ui.admin.form.DetailForm;
 import ui.admin.form.UserAddForm;
 
 import javax.swing.*;
@@ -30,7 +33,7 @@ public class UserView extends JPanel {
 
     private final Color DANGER_COLOR =
             new Color(231, 76, 60);
-
+    TreatmentDetailController treatmentDetail = new TreatmentDetailController();
     // =====================================
     // TABLE
     // =====================================
@@ -90,13 +93,16 @@ public class UserView extends JPanel {
                 ));
 
         buttonPanel.setBackground(BACKGROUND_COLOR);
-
         JButton btnAdd =
                 createButton(
                         "Thêm",
                         SUCCESS_COLOR
                 );
-
+         JButton btnDetail =
+                createButton(
+                        "Chi tiết",
+                        SUCCESS_COLOR
+                );
         JButton btnUpdate =
                 createButton(
                         "Sửa",
@@ -117,6 +123,7 @@ public class UserView extends JPanel {
 
         buttonPanel.add(btnDelete);
 
+        buttonPanel.add(btnDetail);
 
         // =====================================
         // ADD EVENT
@@ -132,7 +139,31 @@ public class UserView extends JPanel {
 
             form.setVisible(true);
         });
+        btnDetail.addActionListener(e->{
+                
+            int row = table.getSelectedRow();
+                if (row != -1) {
 
+                        // Lấy id ở cột đầu tiên (cột 0)
+                        int id = Integer.parseInt(
+                                table.getValueAt(row, 0).toString()
+                        );
+                        System.out.println(id+"id vừa click dc");
+                        JFrame parentFrame =
+                        (JFrame) SwingUtilities
+                                        .getWindowAncestor(this);
+                        TreatmentDetailController controller =
+                                new TreatmentDetailController();
+                        
+                        TreatmentDetail treatmentDetail =
+                                controller.getDetail(id);
+                        System.out.println(treatmentDetail.getPatientName());
+                        DetailForm form =
+                                new DetailForm(parentFrame,treatmentDetail);
+                        form.setVisible(true);
+                }
+
+        });
         // =====================================
         // DELETE EVENT
         // =====================================
@@ -208,9 +239,6 @@ public class UserView extends JPanel {
                 "Ngày sinh",
 
                 "Địa chỉ",
-
-                "Avatar",
-
                 "Email"
         };
 
@@ -338,9 +366,6 @@ public class UserView extends JPanel {
                         user.getBirthDate(),
 
                         user.getAddress(),
-
-                        user.getAvatar(),
-
                         user.getEmail()
                 });
 

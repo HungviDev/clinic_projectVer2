@@ -3,6 +3,7 @@ package ui.auth;
 import ui.admin.AppointmentView;
 import ui.admin.DashboardView;
 import ui.admin.DoctorView;
+import ui.admin.ItinereryView;
 import ui.admin.OrderView;
 import ui.admin.ServicesView;
 import ui.admin.UserView;
@@ -47,7 +48,7 @@ public class MainDashboard extends JFrame {
 
 
         setTitle("Hệ Thống Nha Khoa Việt Anh");
-        setSize(1200, 700);
+        setSize(1200, 800);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -140,6 +141,7 @@ public class MainDashboard extends JFrame {
             JButton btnAppoinment = createMenuButton("Quản lý lịch hẹn");
             JButton btnOrders = createMenuButton("Quản lý đơn hàng");
             JButton btnStatistics = createMenuButton("Thống kê");
+            JButton btnItinary = createMenuButton("Quản lý lộ trình điều trị");
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnUsers);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -152,13 +154,15 @@ public class MainDashboard extends JFrame {
             sidebar.add(btnStatistics);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnAppoinment);
-
+            sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
+            sidebar.add(btnItinary);
             btnUsers.addActionListener(e -> cardLayout.show(contentPanel, "USERS"));
             btnDoctors.addActionListener(e -> cardLayout.show(contentPanel, "DOCTORS"));
             btnServices.addActionListener(e -> cardLayout.show(contentPanel, "SERVICES_ADMIN"));
             btnOrders.addActionListener(e -> cardLayout.show(contentPanel, "ORDERS"));
             btnStatistics.addActionListener(e -> cardLayout.show(contentPanel, "STATISTICS"));
             btnAppoinment.addActionListener(e -> cardLayout.show(contentPanel, "APPOINTMENTS"));
+            btnItinary.addActionListener(e -> cardLayout.show(contentPanel, "ITINERARY"));
         }
 
         // ================= LOGOUT =================
@@ -210,6 +214,7 @@ public class MainDashboard extends JFrame {
         contentPanel.add(new ServicesView(), "SERVICES_ADMIN");
         contentPanel.add(new AppointmentView(), "APPOINTMENTS");
         contentPanel.add(new OrderView(), "ORDERS");
+        contentPanel.add(new ItinereryView(),"ITINERARY");
         contentPanel.add(createPagePanel("THỐNG KÊ", "Biểu đồ doanh thu"), "STATISTICS");
         }
 

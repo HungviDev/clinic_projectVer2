@@ -12,10 +12,7 @@ import java.awt.*;
 import java.util.List;
 
 public class DoctorView extends JPanel {
-
-    // =====================================
-    // COLOR
-    // =====================================
+        
     private final Color BACKGROUND_COLOR =
             new Color(240, 245, 250);
 
