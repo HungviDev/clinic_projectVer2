@@ -391,9 +391,9 @@ private JPanel createActionPanel() {
             // OPTIONS
             // =================================================
             Object[] options = {
-                "approved",
-                "reject",
-                "done"
+                "Xác nhận",
+                "Từ chối",
+                "Hoàn thành"
             };
 
             int choice =

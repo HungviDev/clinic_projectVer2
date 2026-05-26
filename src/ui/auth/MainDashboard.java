@@ -22,6 +22,7 @@ import model.user.User;
 
 import java.awt.*;
 import ui.doctor.View.DoctorDashboardView;
+import ui.doctor.View.MedicalRecordView;
 
 public class MainDashboard extends JFrame {
 
@@ -206,9 +207,9 @@ public class MainDashboard extends JFrame {
         // (Bác sĩ)
         if(role == 2)
         {contentPanel.add(new DoctorDashboardView(userId,userName), "HOME");
-        contentPanel.add(createPagePanel("LỊCH KHÁM", "Danh sách lịch hẹn"), "SCHEDULE");
-        contentPanel.add(createPagePanel("HỒ SƠ BỆNH ÁN", "Quản lý bệnh án"), "MEDICAL");
-        contentPanel.add(createPagePanel("BỆNH NHÂN", "Danh sách bệnh nhân"), "PATIENTS");
+            contentPanel.add(new ui.doctor.View.AppointmentView(userId), "SCHEDULE"); //đây
+            contentPanel.add(new MedicalRecordView(userId), "MEDICAL"); //đây
+            contentPanel.add(createPagePanel("BỆNH NHÂN", "Danh sách bệnh nhân"), "PATIENTS");
         }
         
         // (Admin)
