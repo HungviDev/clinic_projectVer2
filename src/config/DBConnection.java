@@ -6,7 +6,7 @@ import java.sql.DriverManager;
 public class DBConnection {
     public static Connection getConnection() {
         try {
-            String url = "jdbc:sqlserver://localhost:1433;databaseName=NhaKhoaVietAnh;encrypt=false";
+            String url = "jdbc:sqlserver://localhost:1433;databaseName=DentalClinicDB;encrypt=false";
             String user = "sa";
             String pass = "1234";
 

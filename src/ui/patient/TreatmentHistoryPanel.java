@@ -59,82 +59,79 @@ public class TreatmentHistoryPanel extends JPanel {
     // ================= LẤY DỮ LIỆU TỪ DATABASE =================
 // ================= LẤY DỮ LIỆU TỪ DATABASE (KHÔNG DÙNG DỮ LIỆU GIẢ) =================
 private void loadHistoryFromDatabase(int patientId) {
+        listPanel.removeAll();
+        TreatmentHistoryController controller = new TreatmentHistoryController();
+        var histories = controller.getByPatientId(patientId);
 
-    listPanel.removeAll();
-
-    TreatmentHistoryController controller =
-            new TreatmentHistoryController();
-
-    var histories = controller.getByPatientId(patientId);
-
-    if (histories.isEmpty()) {
-
-        JLabel lblEmpty =
-                new JLabel("Bạn chưa có hồ sơ bệnh án hay lịch sử điều trị nào.");
-
-        lblEmpty.setFont(new Font("Segoe UI", Font.ITALIC, 16));
-        lblEmpty.setForeground(TEXT_MUTED);
-        lblEmpty.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        listPanel.add(Box.createRigidArea(new Dimension(0, 50)));
-        listPanel.add(lblEmpty);
-
-    } else {
-
-        SimpleDateFormat sdf =
-                new SimpleDateFormat("dd/MM/yyyy - HH:mm");
-
-        for (var h : histories) {
-
-            String dateStr =
-                    h.getCreatedAt() != null
-                            ? sdf.format(h.getCreatedAt())
-                            : "Không rõ thời gian";
-
-            listPanel.add(
-                    createRecordCard(
-                            dateStr,
-                            h.getDoctorName(),
-                            h.getDiagnosis(),
-                            h.getTreatmentPlan(),
-                            h.getstatusStage()
-                    )
-            );
-
-            listPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        if (histories.isEmpty()) {
+            JLabel lblEmpty = new JLabel("Bạn chưa có hồ sơ bệnh án hay lịch sử điều trị nào.");
+            lblEmpty.setFont(new Font("Segoe UI", Font.ITALIC, 16));
+            lblEmpty.setForeground(TEXT_MUTED);
+            lblEmpty.setAlignmentX(Component.CENTER_ALIGNMENT);
+            listPanel.add(Box.createRigidArea(new Dimension(0, 50)));
+            listPanel.add(lblEmpty);
+        } else {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy - HH:mm");
+            for (var h : histories) {
+                String dateStr = h.getCreatedAt() != null ? sdf.format(h.getCreatedAt()) : "Không rõ thời gian";
+                
+                // Truyền toàn bộ object 'h' vào hàm tạo thẻ
+                listPanel.add(createRecordCard(h, dateStr));
+                listPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+            }
         }
-    }
-
-    listPanel.revalidate();
-    listPanel.repaint();
+        listPanel.revalidate();
+        listPanel.repaint();
 }
 
     // ================= TẠO THẺ HỒ SƠ (CARD DESIGN) =================
-    private JPanel createRecordCard(String date, String doctorName, String diagnosis, String treatment, String statusStage) {
+    private JPanel createRecordCard(TreatmentHistory history, String date) {
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(Color.WHITE);
-        card.setMaximumSize(new Dimension(800, 180));
+        card.setMaximumSize(new Dimension(800, 200));
         card.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
-        // Viền thẻ
         card.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(new Color(220, 230, 240), 1, true),
                 new EmptyBorder(0, 0, 0, 0)
         ));
 
-        // --- 1. THANH TIÊU ĐỀ (Hiện ngày tháng) ---
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
-        headerPanel.setBackground(CARD_HEADER_BG); // Màu nền xanh nhạt
-        
+        // --- 1. THANH TIÊU ĐỀ (Sử dụng BorderLayout để chia 2 bên Trái/Phải) ---
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(CARD_HEADER_BG); 
+        headerPanel.setBorder(new EmptyBorder(10, 15, 10, 15));
+
+        // Góc trái: Ngày khám
+        JPanel leftHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        leftHeader.setOpaque(false);
         JLabel lblDateIcon = new JLabel("📅");
         lblDateIcon.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        
         JLabel lblDateText = new JLabel("Ngày khám: " + date);
         lblDateText.setFont(new Font("Segoe UI", Font.BOLD, 15));
         lblDateText.setForeground(TEXT_DARK);
+        leftHeader.add(lblDateIcon);
+        leftHeader.add(lblDateText);
+
+        // Góc phải: Nút "Theo dõi"
+        JButton btnTrack = new JButton("👁 Theo dõi tiến độ");
+        btnTrack.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnTrack.setForeground(Color.WHITE);
+        btnTrack.setBackground(ICON_COLOR);
+        btnTrack.setFocusPainted(false);
+        btnTrack.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+        btnTrack.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        headerPanel.add(lblDateIcon);
-        headerPanel.add(lblDateText);
+        // Sự kiện khi bấm nút: Mở Dialog tiến độ
+        btnTrack.addActionListener(e -> {
+            Window parentWindow = SwingUtilities.getWindowAncestor(this);
+            // Giả định bạn có hàm lấy TreatmentRouteId trong Model
+            // Truyền ID lộ trình vào Dialog để nó tự truy vấn các Stages
+            int routeId = history.getTreatmentRouteId(); 
+            TreatmentProgressDialog dialog = new TreatmentProgressDialog((JFrame) parentWindow, routeId, history.getTreatmentPlan());
+            dialog.setVisible(true);
+        });
+
+        headerPanel.add(leftHeader, BorderLayout.WEST);
+        headerPanel.add(btnTrack, BorderLayout.EAST);
         card.add(headerPanel, BorderLayout.NORTH);
 
         // --- 2. NỘI DUNG CHÍNH ---
@@ -143,23 +140,15 @@ private void loadHistoryFromDatabase(int patientId) {
         bodyPanel.setBackground(Color.WHITE);
         bodyPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
 
-        // Bác sĩ
-        bodyPanel.add(createInfoRow("", "Bác sĩ phụ trách:", doctorName));
+        bodyPanel.add(createInfoRow("", "Bác sĩ phụ trách:", history.getDoctorName()));
         bodyPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        
-        // Chẩn đoán
-        bodyPanel.add(createInfoRow("", "Chẩn đoán:", diagnosis));
+        bodyPanel.add(createInfoRow("", "Chẩn đoán:", history.getDiagnosis()));
         bodyPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        
-        // Kế hoạch điều trị
-        bodyPanel.add(createInfoRow("", "Kế hoạch điều trị:", treatment));
+        bodyPanel.add(createInfoRow("", "Kế hoạch điều trị:", history.getTreatmentPlan()));
         bodyPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-
-        // Lộ trình điều trị hiện tại
-        bodyPanel.add(createInfoRow("", "Lộ trình điều trị hiện tại:", statusStage));
-
+        bodyPanel.add(createInfoRow("", "Giai đoạn hiện tại:", history.getstatusStage()));
+        bodyPanel.add(Box.createRigidArea(new Dimension(0, 12)));
         card.add(bodyPanel, BorderLayout.CENTER);
-
         return card;
     }
 

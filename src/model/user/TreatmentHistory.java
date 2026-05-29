@@ -9,6 +9,7 @@ public class TreatmentHistory {
     private String diagnosis;
     private String treatmentPlan;
     private String statusStage;
+    private int treatmentRouteId;
 
     public TreatmentHistory() {
     }
@@ -51,5 +52,13 @@ public class TreatmentHistory {
 
     public void setstatusStage(String statusStage) {
         this.statusStage = statusStage;
+    }
+
+    public int getTreatmentRouteId() {
+        return treatmentRouteId;
+    }
+
+    public void setTreatmentRouteId(int treatmentRouteId) {
+        this.treatmentRouteId = treatmentRouteId;
     }
 }

@@ -44,7 +44,7 @@ public class BookingDAO {
                     "JOIN medical_records mr ON mr.treatment_route_id = tr.id " +
                     "WHERE mr.user_id = ? " +
                     "  AND mr.service_id = ? " + 
-                    "  AND ts.status IN ( N'Chưa thực hiện') " +
+                    "  AND ts.status IN ( N'Chưa thực hiện', N'Đang thực hiện' ) " +
                     "ORDER BY ts.sequence_order ASC";
                      
         try (Connection conn = DBConnection.getConnection();

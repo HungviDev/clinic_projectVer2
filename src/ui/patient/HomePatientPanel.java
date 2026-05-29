@@ -264,6 +264,7 @@ public class HomePatientPanel extends JPanel {
         JLabel lblHeader = new JLabel("Ngày " + date.getDayOfMonth() + " Tháng " + date.getMonthValue() + " Năm " + date.getYear());
         lblHeader.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblHeader.setBorder(new EmptyBorder(0, 0, 15, 0));
+        lblHeader.setAlignmentX(Component.CENTER_ALIGNMENT);
         listPanel.add(lblHeader);
 
         boolean hasData = false;
