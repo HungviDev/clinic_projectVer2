@@ -6,8 +6,10 @@ import javax.swing.table.DefaultTableModel;
 
 import controller.admin.RoadMapController;
 import controller.admin.StepRoadMapController;
+import controller.admin.MedicalRecordController; // Khai báo thêm Controller này
 import model.admin.RoadmapModel;
 import model.admin.StepRoadMapModel;
+
 import java.util.List;
 import java.awt.*;
 import java.util.ArrayList;
@@ -17,37 +19,58 @@ public class ItinereryView extends JPanel {
 
     /*
      * =========================================
+     * CLASS HỖ TRỢ (GIẤU ID BỆNH NHÂN & BỆNH ÁN)
+     * =========================================
+     */
+    // Class giấu ID Bệnh nhân
+    public static class PatientComboItem {
+        private int userId;
+        private String fullname;
+
+        public PatientComboItem(int userId, String fullname) {
+            this.userId = userId;
+            this.fullname = fullname;
+        }
+
+        public int getUserId() { return userId; }
+        @Override
+        public String toString() { return fullname; }
+    }
+
+    // Class giấu ID Bệnh án (Mỏ neo)
+    public static class ServiceComboItem {
+        private int medicalRecordId;
+        private String serviceName;
+
+        public ServiceComboItem(int medicalRecordId, String serviceName) {
+            this.medicalRecordId = medicalRecordId;
+            this.serviceName = serviceName;
+        }
+
+        public int getMedicalRecordId() { return medicalRecordId; }
+        @Override
+        public String toString() { return serviceName; }
+    }
+
+    /*
+     * =========================================
      * COLOR
      * =========================================
      */
-
-    private final Color BACKGROUND_COLOR =
-            new Color(245, 247, 250);
-
-    private final Color PRIMARY_COLOR =
-            new Color(25, 118, 210);
-
-    private final Color SUCCESS_COLOR =
-            new Color(46, 204, 113);
-
-    private final Color DANGER_COLOR =
-            new Color(231, 76, 60);
-
-    private final Color WARNING_COLOR =
-            new Color(255, 167, 38);
+    private final Color BACKGROUND_COLOR = new Color(245, 247, 250);
+    private final Color PRIMARY_COLOR = new Color(25, 118, 210);
+    private final Color SUCCESS_COLOR = new Color(46, 204, 113);
+    private final Color DANGER_COLOR = new Color(231, 76, 60);
+    private final Color WARNING_COLOR = new Color(255, 167, 38);
 
     /*
      * =========================================
      * TABLE
      * =========================================
      */
-
     private JTable tableItinerary;
-
     private JTable tableStep;
-
     private DefaultTableModel itineraryModel;
-
     private DefaultTableModel stepModel;
 
     /*
@@ -55,1134 +78,460 @@ public class ItinereryView extends JPanel {
      * DATA
      * =========================================
      */
-
-    private final HashMap<Integer, ArrayList<Object[]>> itinerarySteps =
-            new HashMap<>();
-     RoadMapController roadmapController = new RoadMapController();
+    private final HashMap<Integer, ArrayList<Object[]>> itinerarySteps = new HashMap<>();
+    
+    // Khai báo các Controller
+    RoadMapController roadmapController = new RoadMapController();
     StepRoadMapController stepController = new StepRoadMapController();
+    MedicalRecordController mrController = new MedicalRecordController(); // Đã thêm Controller dữ liệu thật
 
     public ItinereryView() {
-
         setLayout(new BorderLayout());
-
         setBackground(BACKGROUND_COLOR);
-
         initUI();
-
         loadData();
-
         initAction();
     }
 
-
     private void initUI() {
-
-        JPanel header =
-                new JPanel(new BorderLayout());
-
+        // =========================================
+        // HEADER
+        // =========================================
+        JPanel header = new JPanel(new BorderLayout());
         header.setBackground(BACKGROUND_COLOR);
+        header.setBorder(new EmptyBorder(20, 25, 20, 25));
 
-        header.setBorder(
-                new EmptyBorder(20, 25, 20, 25)
-        );
+        JLabel title = new JLabel("Quản lý lộ trình điều trị");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 28));
 
-        JLabel title =
-                new JLabel("Quản lý lộ trình điều trị");
-
-        title.setFont(
-                new Font("Segoe UI", Font.BOLD, 28)
-        );
-
-        JPanel buttonPanel =
-                new JPanel(
-                        new FlowLayout(
-                                FlowLayout.RIGHT,
-                                10,
-                                0
-                        )
-                );
-
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         buttonPanel.setBackground(BACKGROUND_COLOR);
 
-        JButton btnAddItinerary =
-                createButton(
-                        "Thêm lộ trình",
-                        SUCCESS_COLOR
-                );
-
-        JButton btnAddStep =
-                createButton(
-                        "Thêm bước",
-                        PRIMARY_COLOR
-                );
-
-        JButton btnDelete =
-                createButton(
-                        "Xóa",
-                        DANGER_COLOR
-                );
+        JButton btnAddItinerary = createButton("Thêm lộ trình", SUCCESS_COLOR);
+        JButton btnAddStep = createButton("Thêm bước", PRIMARY_COLOR);
+        JButton btnDelete = createButton("Xóa", DANGER_COLOR);
 
         buttonPanel.add(btnAddItinerary);
-
         buttonPanel.add(btnAddStep);
-
         buttonPanel.add(btnDelete);
 
         header.add(title, BorderLayout.WEST);
-
         header.add(buttonPanel, BorderLayout.EAST);
 
-        /*
-         * =========================================
-         * MAIN
-         * =========================================
-         */
-
-        JPanel mainPanel =
-                new JPanel(new GridLayout(1, 2, 20, 0));
-
+        // =========================================
+        // MAIN PANEL
+        // =========================================
+        JPanel mainPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         mainPanel.setBackground(BACKGROUND_COLOR);
+        mainPanel.setBorder(new EmptyBorder(0, 25, 25, 25));
 
-        mainPanel.setBorder(
-                new EmptyBorder(0, 25, 25, 25)
-        );
-
-        /*
-         * =========================================
-         * LEFT PANEL
-         * =========================================
-         */
-
-        JPanel leftPanel =
-                createCardPanel(
-                        "Danh sách lộ trình"
-                );
-
-        String[] itineraryColumns = {
-                "ID",
-                "Tên lộ trình",
-                "Mô tả",
-                "Ngày tạo"
-
-        };
-
-        itineraryModel =
-        new DefaultTableModel(
-                itineraryColumns,
-                0
-        );
-
-        tableItinerary =
-                new JTable(itineraryModel);
-
-        // Style table
+        // =========================================
+        // LEFT PANEL (Lộ trình)
+        // =========================================
+        JPanel leftPanel = createCardPanel("Danh sách lộ trình");
+        String[] itineraryColumns = {"ID", "Tên lộ trình", "Mô tả", "Ngày tạo"};
+        itineraryModel = new DefaultTableModel(itineraryColumns, 0);
+        tableItinerary = new JTable(itineraryModel);
         styleTable(tableItinerary);
-
-        // Cho phép scroll ngang
-        tableItinerary.setAutoResizeMode(
-                JTable.AUTO_RESIZE_OFF
-        );
-
-        // Chiều cao row
+        tableItinerary.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         tableItinerary.setRowHeight(35);
 
-        // Set width từng cột
-        tableItinerary.getColumnModel()
-                .getColumn(0)
-                .setPreferredWidth(80);
+        tableItinerary.getColumnModel().getColumn(0).setPreferredWidth(80);
+        tableItinerary.getColumnModel().getColumn(1).setPreferredWidth(250);
+        tableItinerary.getColumnModel().getColumn(2).setPreferredWidth(450);
+        tableItinerary.getColumnModel().getColumn(3).setPreferredWidth(180);
 
-        tableItinerary.getColumnModel()
-                .getColumn(1)
-                .setPreferredWidth(250);
-
-        tableItinerary.getColumnModel()
-                .getColumn(2)
-                .setPreferredWidth(450);
-
-        tableItinerary.getColumnModel()
-                .getColumn(3)
-                .setPreferredWidth(180);
-
-        // ScrollPane
-        JScrollPane scrollLeft =
-                new JScrollPane(tableItinerary);
-
-        // Scroll dọc luôn hiện
-        scrollLeft.setVerticalScrollBarPolicy(
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        );
-
-        // Scroll ngang luôn hiện
-        scrollLeft.setHorizontalScrollBarPolicy(
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
-        );
-
-        // Background đẹp hơn
-        scrollLeft.getViewport()
-                .setBackground(Color.WHITE);
-
-        // Border đẹp hơn
-        scrollLeft.setBorder(
-                BorderFactory.createLineBorder(
-                        new Color(220,220,220),
-                        1
-                )
-        );
-
+        JScrollPane scrollLeft = new JScrollPane(tableItinerary);
+        scrollLeft.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollLeft.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollLeft.getViewport().setBackground(Color.WHITE);
+        scrollLeft.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
         leftPanel.add(scrollLeft, BorderLayout.CENTER);
 
-
-        JPanel rightPanel =
-                createCardPanel(
-                        "Các bước điều trị"
-                );
-
-        String[] stepColumns = {
-
-                "STT",
-
-                "Tên giai đoạn",
-
-                "Thứ tự",
-
-                "Khoảng cách",
-
-                "Ngày hẹn",
-
-                "Trạng thái",
-
-                "Chi phí",
-
-                "Ghi chú"
-                };
-
-        stepModel =
-        new DefaultTableModel(
-                stepColumns,
-                0
-        );
-
-        tableStep =
-                new JTable(stepModel);
-
-        // Style table
+        // =========================================
+        // RIGHT PANEL (Các bước)
+        // =========================================
+        JPanel rightPanel = createCardPanel("Các bước điều trị");
+        String[] stepColumns = {"STT", "Tên giai đoạn", "Thứ tự", "Khoảng cách", "Ngày hẹn", "Trạng thái", "Chi phí", "Ghi chú"};
+        stepModel = new DefaultTableModel(stepColumns, 0);
+        tableStep = new JTable(stepModel);
         styleTable(tableStep);
-
-        // Cho phép scroll ngang
-        tableStep.setAutoResizeMode(
-                JTable.AUTO_RESIZE_OFF
-        );
-
-        // Chiều cao row
+        tableStep.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         tableStep.setRowHeight(35);
 
-        // Set width từng cột
-        tableStep.getColumnModel()
-                .getColumn(0)
-                .setPreferredWidth(70);
+        tableStep.getColumnModel().getColumn(0).setPreferredWidth(70);
+        tableStep.getColumnModel().getColumn(1).setPreferredWidth(250);
+        tableStep.getColumnModel().getColumn(2).setPreferredWidth(100);
+        tableStep.getColumnModel().getColumn(3).setPreferredWidth(120);
+        tableStep.getColumnModel().getColumn(4).setPreferredWidth(150);
+        tableStep.getColumnModel().getColumn(5).setPreferredWidth(130);
+        tableStep.getColumnModel().getColumn(6).setPreferredWidth(120);
+        tableStep.getColumnModel().getColumn(7).setPreferredWidth(300);
 
-        tableStep.getColumnModel()
-                .getColumn(1)
-                .setPreferredWidth(250);
-
-        tableStep.getColumnModel()
-                .getColumn(2)
-                .setPreferredWidth(100);
-
-        tableStep.getColumnModel()
-                .getColumn(3)
-                .setPreferredWidth(120);
-
-        tableStep.getColumnModel()
-                .getColumn(4)
-                .setPreferredWidth(150);
-
-        tableStep.getColumnModel()
-                .getColumn(5)
-                .setPreferredWidth(130);
-
-        tableStep.getColumnModel()
-                .getColumn(6)
-                .setPreferredWidth(120);
-
-        tableStep.getColumnModel()
-                .getColumn(7)
-                .setPreferredWidth(300);
-
-        // ScrollPane
-        JScrollPane scrollRight =
-                new JScrollPane(tableStep);
-
-        // Scroll dọc luôn hiện
-        scrollRight.setVerticalScrollBarPolicy(
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        );
-
-        // Scroll ngang luôn hiện
-        scrollRight.setHorizontalScrollBarPolicy(
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS
-        );
-
-        // Background đẹp hơn
-        scrollRight.getViewport()
-                .setBackground(Color.WHITE);
-
-        // Border đẹp hơn
-        scrollRight.setBorder(
-                BorderFactory.createLineBorder(
-                        new Color(220,220,220),
-                        1
-                )
-        );
-
-        rightPanel.add(
-                scrollRight,
-                BorderLayout.CENTER
-        );
-
-        /*
-         * =========================================
-         * ADD
-         * =========================================
-         */
+        JScrollPane scrollRight = new JScrollPane(tableStep);
+        scrollRight.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollRight.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollRight.getViewport().setBackground(Color.WHITE);
+        scrollRight.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
+        rightPanel.add(scrollRight, BorderLayout.CENTER);
 
         mainPanel.add(leftPanel);
-
         mainPanel.add(rightPanel);
 
         add(header, BorderLayout.NORTH);
-
         add(mainPanel, BorderLayout.CENTER);
 
         /*
          * =========================================
-         * ACTION BUTTON
+         * ACTION: THÊM LỘ TRÌNH (DÙNG DỮ LIỆU THẬT)
          * =========================================
          */
-
         btnAddItinerary.addActionListener(e -> {
-
-    JTextField txtName = new JTextField(20);
-    JTextField txtService = new JTextField(20);
-
-    Font font = new Font("Segoe UI", Font.PLAIN, 14);
-
-    txtName.setFont(font);
-    txtService.setFont(font);
-
-    Dimension fieldSize = new Dimension(250, 35);
-
-    txtName.setPreferredSize(fieldSize);
-    txtService.setPreferredSize(fieldSize);
-
-    JPanel panel = new JPanel(new GridBagLayout());
-    panel.setBackground(Color.WHITE);
-    panel.setBorder(
-            BorderFactory.createEmptyBorder(
-                    20,
-                    25,
-                    20,
-                    25
-            )
-    );
-
-    GridBagConstraints gbc = new GridBagConstraints();
-
-    gbc.insets = new Insets(10, 10, 10, 10);
-    gbc.anchor = GridBagConstraints.WEST;
-    gbc.fill = GridBagConstraints.HORIZONTAL;
-
-    JLabel lblTitle =
-            new JLabel("THÊM LỘ TRÌNH ĐIỀU TRỊ");
-
-    lblTitle.setFont(
-            new Font("Segoe UI", Font.BOLD, 18)
-    );
-
-    lblTitle.setForeground(
-            new Color(33, 150, 243)
-    );
-
-    gbc.gridx = 0;
-    gbc.gridy = 0;
-    gbc.gridwidth = 2;
-
-    panel.add(lblTitle, gbc);
-
-    gbc.gridwidth = 1;
-
-    // Tên lộ trình
-    gbc.gridx = 0;
-    gbc.gridy = 1;
-
-    JLabel lblName =
-            new JLabel("Tên lộ trình:");
-
-    lblName.setFont(font);
-
-    panel.add(lblName, gbc);
-
-    gbc.gridx = 1;
-
-    panel.add(txtName, gbc);
-
-    // Dịch vụ
-    gbc.gridx = 0;
-    gbc.gridy = 2;
-
-    JLabel lblService =
-            new JLabel("Mô tả");
-
-    lblService.setFont(font);
-
-    panel.add(lblService, gbc);
-
-    gbc.gridx = 1;
-
-    panel.add(txtService, gbc);
-
-    UIManager.put(
-            "OptionPane.background",
-            Color.WHITE
-    );
-
-    UIManager.put(
-            "Panel.background",
-            Color.WHITE
-    );
-
-    int result =
-            JOptionPane.showConfirmDialog(
-                    null,
-                    panel,
-                    "Thêm lộ trình",
-                    JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.PLAIN_MESSAGE
-            );
-
-    if (result == JOptionPane.OK_OPTION) {
-
-        RoadmapModel roadmap =
-                new RoadmapModel();
-
-        roadmap.setTitle(
-                txtName.getText()
-        );
-
-        roadmap.setDescription(
-                txtService.getText()
-        );
-
-        // Gọi controller để insert database
-        boolean isSuccess =
-                roadmapController.insertRoadmap(roadmap);
-
-        if (isSuccess) {
-                loadData();
-                JOptionPane.showMessageDialog(
-                        null,
-                        "Thêm lộ trình thành công!"
-                );
-        } else {
-
-                JOptionPane.showMessageDialog(
-                        null,
-                        "Thêm lộ trình thất bại!"
-                );
-        }
-        }
-});
-
-        /*
-         * =========================================
-         * ADD STEP
-         * =========================================
-         */
-
-        btnAddStep.addActionListener(e -> {
-            int row =tableItinerary.getSelectedRow();
-            if (row == -1) {
-                JOptionPane.showMessageDialog(
-                        null,
-                        "Hãy chọn lộ trình"
-                );
-                return;
-            }   
-            int itineraryId = Integer.parseInt(itineraryModel.getValueAt(row, 0).toString());
-            System.out.println(itineraryId + " id vừa check");  
-        JTextField txtStageName = new JTextField();
-        JTextField txtOrder = new JTextField();
-        JTextField txtDuration = new JTextField();
-        JTextField txtCost = new JTextField();
-        JTextArea txtNote = new JTextArea(4, 20);
-
-        Font font = new Font("Segoe UI", Font.PLAIN, 15);
-        Font titleFont = new Font("Segoe UI", Font.BOLD, 15);
-
-        txtStageName.setFont(font);
-        txtOrder.setFont(font);
-        txtDuration.setFont(font);
-        txtCost.setFont(font);
-        txtNote.setFont(font);
-
-        txtNote.setLineWrap(true);
-        txtNote.setWrapStyleWord(true);
-
-        // ===== Main Panel =====
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(new Color(245, 247, 250));
-
-        panel.setBorder(
-                BorderFactory.createEmptyBorder(
-                        20,
-                        20,
-                        20,
-                        20
-                )
-        );
-
-        // ===== Header =====
-        JLabel lblTitle =
-                new JLabel("THÊM GIAI ĐOẠN ĐIỀU TRỊ");
-
-        lblTitle.setFont(
-                new Font("Segoe UI", Font.BOLD, 22)
-        );
-
-        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
-        lblTitle.setBorder(
-                BorderFactory.createEmptyBorder(
-                        0,
-                        0,
-                        20,
-                        0
-                )
-        );
-
-        panel.add(lblTitle, BorderLayout.NORTH);
-
-        // ===== Form =====
-        JPanel formPanel =
-                new JPanel(
-                        new GridBagLayout()
-                );
-
-        formPanel.setBackground(Color.WHITE);
-
-        formPanel.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                new Color(220, 220, 220)
-                        ),
-                        BorderFactory.createEmptyBorder(
-                                20,
-                                20,
-                                20,
-                                20
-                        )
-                )
-        );
-
-        GridBagConstraints gbc =
-                new GridBagConstraints();
-
-        gbc.insets = new Insets(12, 12, 12, 12);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        // ===== Helper =====
-        int y = 0;
-
-        // ===== Tên giai đoạn =====
-        gbc.gridx = 0;
-        gbc.gridy = y;
-
-        JLabel lblStage =
-                new JLabel("Tên giai đoạn");
-
-        lblStage.setFont(titleFont);
-
-        formPanel.add(lblStage, gbc);
-
-        gbc.gridx = 1;
-
-        txtStageName.setPreferredSize(
-                new Dimension(260, 38)
-        );
-
-        formPanel.add(txtStageName, gbc);
-
-        // ===== Thứ tự =====
-        y++;
-
-        gbc.gridx = 0;
-        gbc.gridy = y;
-
-        JLabel lblOrder =
-                new JLabel("Thứ tự");
-
-        lblOrder.setFont(titleFont);
-
-        formPanel.add(lblOrder, gbc);
-
-        gbc.gridx = 1;
-
-        txtOrder.setPreferredSize(
-                new Dimension(260, 38)
-        );
-
-        formPanel.add(txtOrder, gbc);
-
-        // ===== Thời gian điều trị =====
-        y++;
-
-        gbc.gridx = 0;
-        gbc.gridy = y;
-
-        JLabel lblDuration =
-                new JLabel("Thời gian điều trị");
-
-        lblDuration.setFont(titleFont);
-
-        formPanel.add(lblDuration, gbc);
-
-        gbc.gridx = 1;
-
-        txtDuration.setPreferredSize(
-                new Dimension(260, 38)
-        );
-
-        formPanel.add(txtDuration, gbc);
-
-        // ===== Chi phí =====
-        y++;
-
-        gbc.gridx = 0;
-        gbc.gridy = y;
-
-        JLabel lblCost =
-                new JLabel("Chi phí");
-
-        lblCost.setFont(titleFont);
-
-        formPanel.add(lblCost, gbc);
-
-        gbc.gridx = 1;
-
-        txtCost.setPreferredSize(
-                new Dimension(260, 38)
-        );
-
-        formPanel.add(txtCost, gbc);
-
-        // ===== Ghi chú =====
-        y++;
-
-        gbc.gridx = 0;
-        gbc.gridy = y;
-
-        JLabel lblNote =
-                new JLabel("Ghi chú");
-
-        lblNote.setFont(titleFont);
-
-        formPanel.add(lblNote, gbc);
-
-        gbc.gridx = 1;
-
-        JScrollPane scrollNote =
-                new JScrollPane(txtNote);
-
-        scrollNote.setPreferredSize(
-                new Dimension(260, 100)
-        );
-
-        formPanel.add(scrollNote, gbc);
-
-        panel.add(formPanel, BorderLayout.CENTER);
-
-
-
-            int result =
-                    JOptionPane.showConfirmDialog(
-                            null,
-                            panel,
-                            "Thêm bước điều trị",
-                            JOptionPane.OK_CANCEL_OPTION
-                    );
+            Font font = new Font("Segoe UI", Font.PLAIN, 15);
+            Dimension fieldSize = new Dimension(280, 38);
+
+            // 1. Ô CHỌN BỆNH NHÂN
+            JComboBox<PatientComboItem> cboPatient = new JComboBox<>();
+            cboPatient.setFont(font);
+            cboPatient.setPreferredSize(fieldSize);
+            
+            // 2. Ô CHỌN DỊCH VỤ
+            JComboBox<ServiceComboItem> cboService = new JComboBox<>();
+            cboService.setFont(font);
+            cboService.setPreferredSize(fieldSize);
+
+            // --- NẠP DỮ LIỆU THẬT: Danh sách Bệnh nhân ---
+            List<PatientComboItem> patients = mrController.getPatientsNeedingRoute();
+            for (PatientComboItem p : patients) {
+                cboPatient.addItem(p);
+            }
+
+            // --- SỰ KIỆN: Liên kết 2 ô để load dữ liệu thật ---
+            cboPatient.addActionListener(event -> {
+                PatientComboItem selectedPatient = (PatientComboItem) cboPatient.getSelectedItem();
+                cboService.removeAllItems(); // Xóa sạch dịch vụ cũ
+
+                if (selectedPatient != null) {
+                    // Gọi DB lấy danh sách dịch vụ đang chữa dở của bệnh nhân này
+                    List<ServiceComboItem> services = mrController.getUnroutedServicesByPatient(selectedPatient.getUserId());
+                    for (ServiceComboItem s : services) {
+                        cboService.addItem(s);
+                    }
+                }
+            });
+
+            // Kích hoạt thủ công 1 lần đầu tiên để Load dịch vụ
+            if (cboPatient.getItemCount() > 0) {
+                cboPatient.setSelectedIndex(0); 
+            }
+
+            // 3. Ô Tên lộ trình
+            JTextField txtTitle = new JTextField();
+            txtTitle.setFont(font);
+            txtTitle.setPreferredSize(fieldSize);
+
+            // 4. Ô Mô tả (TextArea to đùng)
+            JTextArea txtDescription = new JTextArea(4, 20);
+            txtDescription.setFont(font);
+            txtDescription.setLineWrap(true);
+            txtDescription.setWrapStyleWord(true);
+            JScrollPane scrollDescription = new JScrollPane(txtDescription);
+            scrollDescription.setPreferredSize(new Dimension(280, 100));
+
+            // Dựng giao diện Popup
+            JPanel panel = new JPanel(new GridBagLayout());
+            panel.setBackground(Color.WHITE);
+            panel.setBorder(BorderFactory.createEmptyBorder(20, 25, 20, 25));
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(10, 10, 10, 10);
+            gbc.anchor = GridBagConstraints.WEST;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+
+            JLabel lblFormTitle = new JLabel("THÊM LỘ TRÌNH ĐIỀU TRỊ");
+            lblFormTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            lblFormTitle.setForeground(new Color(33, 150, 243));
+
+            gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+            panel.add(lblFormTitle, gbc);
+            gbc.gridwidth = 1;
+
+            // Row 1: Chọn bệnh nhân
+            gbc.gridy = 1; gbc.gridx = 0;
+            JLabel lblPatient = new JLabel("Chọn bệnh nhân:"); lblPatient.setFont(font);
+            panel.add(lblPatient, gbc);
+            gbc.gridx = 1; panel.add(cboPatient, gbc);
+
+            // Row 2: Chọn dịch vụ
+            gbc.gridy = 2; gbc.gridx = 0;
+            JLabel lblService = new JLabel("Chọn dịch vụ:"); lblService.setFont(font);
+            panel.add(lblService, gbc);
+            gbc.gridx = 1; panel.add(cboService, gbc);
+
+            // Row 3: Tên lộ trình
+            gbc.gridy = 3; gbc.gridx = 0;
+            JLabel lblName = new JLabel("Tên lộ trình:"); lblName.setFont(font);
+            panel.add(lblName, gbc);
+            gbc.gridx = 1; panel.add(txtTitle, gbc);
+
+            // Row 4: Mô tả
+            gbc.gridy = 4; gbc.gridx = 0; gbc.anchor = GridBagConstraints.NORTHWEST;
+            JLabel lblDesc = new JLabel("Mô tả:"); lblDesc.setFont(font);
+            panel.add(lblDesc, gbc);
+            gbc.gridx = 1; panel.add(scrollDescription, gbc);
+
+            UIManager.put("OptionPane.background", Color.WHITE);
+            UIManager.put("Panel.background", Color.WHITE);
+
+            int result = JOptionPane.showConfirmDialog(null, panel, "Thêm lộ trình", 
+                                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+            // =========================================
+            // XỬ LÝ LƯU DỮ LIỆU
+            // =========================================
             if (result == JOptionPane.OK_OPTION) {
+                
+                // 1. LẤY CÁI MỎ NEO (ID BỆNH ÁN) TỪ Ô DỊCH VỤ
+                ServiceComboItem selectedService = (ServiceComboItem) cboService.getSelectedItem();
+                if (selectedService == null) {
+                    JOptionPane.showMessageDialog(null, "Khách hàng này chưa có dịch vụ nào để thêm lộ trình!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                int targetMedicalRecordId = selectedService.getMedicalRecordId();
 
-                StepRoadMapModel step =
-                        new StepRoadMapModel();
+                // 2. Gói dữ liệu
+                RoadmapModel roadmap = new RoadmapModel();
+                roadmap.setTitle(txtTitle.getText());
+                roadmap.setDescription(txtDescription.getText());
 
-                step.setTreatmentRouteId(itineraryId);
+                // 3. TRUYỀN ID BỆNH ÁN XUỐNG CONTROLLER ĐỂ CHẠY TRANSACTION
+                boolean isSuccess = roadmapController.insertRoadmap(roadmap, targetMedicalRecordId);
 
-                step.setStageName(
-                        txtStageName.getText()
-                );
-
-                step.setSequenceOrder(
-                        Integer.parseInt(
-                                txtOrder.getText()
-                        )
-                );
-
-                // Ví dụ thời gian điều trị lưu vào delay
-                step.setDelay(
-                        Integer.parseInt(
-                                txtDuration.getText()
-                        )
-                );
-
-                step.setCost(
-                        Double.parseDouble(
-                                txtCost.getText()
-                        )
-                );
-
-                step.setNote(
-                        txtNote.getText()
-                );
-
-                step.setStatus("Chưa thực hiện");
-
-                // Nếu có appointment date thì set
-                // step.setAppointmentDate(null);
-                boolean inserted =
-                        stepController.insertStepByRouteId(step);
-                if (inserted) {
-                        JOptionPane.showMessageDialog(
-                                null,
-                                "Thêm giai đoạn thành công"
-                        );
-                        loadSteps(itineraryId);
+                if (isSuccess) {
+                    loadData();
+                    JOptionPane.showMessageDialog(null, "Thêm lộ trình thành công!");
                 } else {
-
-                        JOptionPane.showMessageDialog(
-                                null,
-                                "Thêm thất bại"
-                        );
+                    JOptionPane.showMessageDialog(null, "Thêm lộ trình thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
-                }
+            }
         });
 
         /*
          * =========================================
-         * DELETE
+         * ACTION: ADD STEP
          * =========================================
          */
+        btnAddStep.addActionListener(e -> {
+            int row = tableItinerary.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(null, "Hãy chọn lộ trình trước khi thêm bước điều trị!");
+                return;
+            }
+            int itineraryId = Integer.parseInt(itineraryModel.getValueAt(row, 0).toString());
 
-      btnDelete.addActionListener(e -> {
+            JTextField txtStageName = new JTextField();
+            JTextField txtOrder = new JTextField();
+            JTextField txtDuration = new JTextField();
+            JTextField txtCost = new JTextField();
+            JTextArea txtNote = new JTextArea(4, 20);
 
-    int row =
-            tableItinerary.getSelectedRow();
+            Font font = new Font("Segoe UI", Font.PLAIN, 15);
+            Font titleFont = new Font("Segoe UI", Font.BOLD, 15);
 
-    if (row == -1) {
+            txtStageName.setFont(font); txtOrder.setFont(font);
+            txtDuration.setFont(font); txtCost.setFont(font); txtNote.setFont(font);
+            txtNote.setLineWrap(true); txtNote.setWrapStyleWord(true);
 
-        JOptionPane.showMessageDialog(
-                null,
-                "Chọn lộ trình cần xóa"
-        );
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.setBackground(new Color(245, 247, 250));
+            panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        return;
+            JLabel lblTitle = new JLabel("THÊM GIAI ĐOẠN ĐIỀU TRỊ");
+            lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
+            lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
+            lblTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
+            panel.add(lblTitle, BorderLayout.NORTH);
+
+            JPanel formPanel = new JPanel(new GridBagLayout());
+            formPanel.setBackground(Color.WHITE);
+            formPanel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(220, 220, 220)),
+                    BorderFactory.createEmptyBorder(20, 20, 20, 20)));
+
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(12, 12, 12, 12);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+
+            int y = 0;
+            // Tên giai đoạn
+            gbc.gridx = 0; gbc.gridy = y;
+            JLabel lblStage = new JLabel("Tên giai đoạn"); lblStage.setFont(titleFont);
+            formPanel.add(lblStage, gbc);
+            gbc.gridx = 1; txtStageName.setPreferredSize(new Dimension(260, 38)); formPanel.add(txtStageName, gbc);
+
+            // Thứ tự
+            y++; gbc.gridx = 0; gbc.gridy = y;
+            JLabel lblOrder = new JLabel("Thứ tự"); lblOrder.setFont(titleFont);
+            formPanel.add(lblOrder, gbc);
+            gbc.gridx = 1; txtOrder.setPreferredSize(new Dimension(260, 38)); formPanel.add(txtOrder, gbc);
+
+            // Thời gian
+            y++; gbc.gridx = 0; gbc.gridy = y;
+            JLabel lblDuration = new JLabel("Khoảng cách (Ngày)"); lblDuration.setFont(titleFont);
+            formPanel.add(lblDuration, gbc);
+            gbc.gridx = 1; txtDuration.setPreferredSize(new Dimension(260, 38)); formPanel.add(txtDuration, gbc);
+
+            // Chi phí
+            y++; gbc.gridx = 0; gbc.gridy = y;
+            JLabel lblCost = new JLabel("Chi phí"); lblCost.setFont(titleFont);
+            formPanel.add(lblCost, gbc);
+            gbc.gridx = 1; txtCost.setPreferredSize(new Dimension(260, 38)); formPanel.add(txtCost, gbc);
+
+            // Ghi chú
+            y++; gbc.gridx = 0; gbc.gridy = y;
+            JLabel lblNote = new JLabel("Ghi chú"); lblNote.setFont(titleFont);
+            formPanel.add(lblNote, gbc);
+            gbc.gridx = 1; JScrollPane scrollNote = new JScrollPane(txtNote);
+            scrollNote.setPreferredSize(new Dimension(260, 100)); formPanel.add(scrollNote, gbc);
+
+            panel.add(formPanel, BorderLayout.CENTER);
+
+            int result = JOptionPane.showConfirmDialog(null, panel, "Thêm bước điều trị", JOptionPane.OK_CANCEL_OPTION);
+            
+            if (result == JOptionPane.OK_OPTION) {
+                try {
+                    StepRoadMapModel step = new StepRoadMapModel();
+                    step.setTreatmentRouteId(itineraryId);
+                    step.setStageName(txtStageName.getText());
+                    step.setSequenceOrder(Integer.parseInt(txtOrder.getText().isEmpty() ? "0" : txtOrder.getText()));
+                    step.setDelay(Integer.parseInt(txtDuration.getText().isEmpty() ? "0" : txtDuration.getText()));
+                    step.setCost(Double.parseDouble(txtCost.getText().isEmpty() ? "0" : txtCost.getText()));
+                    step.setNote(txtNote.getText());
+                    step.setStatus("Chưa thực hiện");
+
+                    boolean inserted = stepController.insertStepByRouteId(step);
+                    if (inserted) {
+                        JOptionPane.showMessageDialog(null, "Thêm giai đoạn thành công");
+                        loadSteps(itineraryId);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Thêm thất bại", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Vui lòng nhập đúng định dạng số cho Thứ tự, Khoảng cách và Chi phí!", "Lỗi nhập liệu", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        });
+
+        /*
+         * =========================================
+         * ACTION: DELETE
+         * =========================================
+         */
+        btnDelete.addActionListener(e -> {
+            int row = tableItinerary.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(null, "Chọn lộ trình cần xóa");
+                return;
+            }
+
+            int confirm = JOptionPane.showConfirmDialog(null, "Bạn có chắc muốn xóa?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                int id = Integer.parseInt(itineraryModel.getValueAt(row, 0).toString());
+                boolean check = roadmapController.deleteRoadmap(id);
+                if (check) {
+                    itineraryModel.removeRow(row);
+                    itinerarySteps.remove(id);
+                    stepModel.setRowCount(0);
+                    JOptionPane.showMessageDialog(null, "Xóa thành công");
+                    loadData();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Xóa thất bại");
+                }
+            }
+        });
     }
-
-    int confirm =
-            JOptionPane.showConfirmDialog(
-                    null,
-                    "Bạn có chắc muốn xóa ?",
-                    "Xác nhận",
-                    JOptionPane.YES_NO_OPTION
-            );
-
-    if (confirm == JOptionPane.YES_OPTION) {
-
-        int id =
-                Integer.parseInt(
-                        itineraryModel
-                                .getValueAt(row, 0)
-                                .toString()
-                );
-
-        boolean check =
-                roadmapController.deleteRoadmap(id);
-
-        if (check) {
-            itineraryModel.removeRow(row);
-            itinerarySteps.remove(id);
-            stepModel.setRowCount(0);
-            JOptionPane.showMessageDialog(
-                    null,
-                    "Xóa thành công"
-            );
-            loadData();
-        } else {
-
-            JOptionPane.showMessageDialog(
-                    null,
-                    "Xóa thất bại"
-            );
-        }
-    }
-});
-    }
-
-    /*
-     * =========================================
-     * ACTION
-     * =========================================
-     */
 
     private void initAction() {
-
-        tableItinerary
-                .getSelectionModel()
-                .addListSelectionListener(e -> {
-
-                    int row =
-                            tableItinerary.getSelectedRow();
-
-                    if (row != -1) {
-
-                        int itineraryId =
-                                Integer.parseInt(
-                                        itineraryModel
-                                                .getValueAt(row, 0)
-                                                .toString()
-                                );
-
-                        loadSteps(itineraryId);
-                    }
-                });
+        tableItinerary.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = tableItinerary.getSelectedRow();
+                if (row != -1) {
+                    int itineraryId = Integer.parseInt(itineraryModel.getValueAt(row, 0).toString());
+                    loadSteps(itineraryId);
+                }
+            }
+        });
     }
-
-    /*
-     * =========================================
-     * LOAD STEP
-     * =========================================
-     */
 
     private void loadSteps(int itineraryId) {
-    stepModel.setRowCount(0);
-    List<StepRoadMapModel> steps =
-    stepController.getStepsByRouteId(itineraryId);
-    for (StepRoadMapModel step : steps) {
-
-        stepModel.addRow(new Object[]{
-
-                step.getId(),
-
-                step.getStageName(),
-
-                step.getSequenceOrder(),
-
-                step.getStatus(),
-
-                step.getDelay(),
-
-                step.getCost(),
-
-                step.getNote()
-        });
+        stepModel.setRowCount(0);
+        List<StepRoadMapModel> steps = stepController.getStepsByRouteId(itineraryId);
+        for (StepRoadMapModel step : steps) {
+            stepModel.addRow(new Object[]{
+                    step.getId(), step.getStageName(), step.getSequenceOrder(),
+                    step.getDelay() + " ngày", step.getAppointmentDate(),
+                    step.getStatus(), step.getCost(), step.getNote()
+            });
+        }
     }
-
-    // Refresh JTable
-    stepModel.fireTableDataChanged();
-}
-
-    /*
-     * =========================================
-     * FAKE DATA
-     * =========================================
-     */
-
-    private void fakeData() {
-
-        itineraryModel.addRow(new Object[]{
-
-                1,
-
-                "Niềng mắc cài",
-
-                "Niềng răng",
-
-                "Dr. Minh"
-        });
-
-        ArrayList<Object[]> steps1 =
-                new ArrayList<>();
-
-        steps1.add(new Object[]{
-
-                1,
-
-                "Khám tổng quát",
-
-                "Kiểm tra răng",
-
-                "30 phút",
-
-                "Hoàn thành"
-        });
-
-        steps1.add(new Object[]{
-
-                2,
-
-                "Chụp X-Ray",
-
-                "Chụp toàn hàm",
-
-                "20 phút",
-
-                "Hoàn thành"
-        });
-
-        steps1.add(new Object[]{
-
-                3,
-
-                "Gắn mắc cài",
-
-                "Tiến hành niềng",
-
-                "2 giờ",
-
-                "Đang thực hiện"
-        });
-
-        itinerarySteps.put(1, steps1);
-
-        itineraryModel.addRow(new Object[]{
-
-                2,
-
-                "Implant Straumann",
-
-                "Trồng Implant",
-
-                "Dr. Hùng"
-        });
-
-        ArrayList<Object[]> steps2 =
-                new ArrayList<>();
-
-        steps2.add(new Object[]{
-
-                1,
-
-                "Khám",
-
-                "Kiểm tra mất răng",
-
-                "20 phút",
-
-                "Hoàn thành"
-        });
-
-        steps2.add(new Object[]{
-
-                2,
-
-                "Cấy trụ Implant",
-
-                "Cấy trụ titanium",
-
-                "1 giờ",
-
-                "Chưa thực hiện"
-        });
-
-        itinerarySteps.put(2, steps2);
-    }
-
-    /*
-     * =========================================
-     * STYLE TABLE
-     * =========================================
-     */
 
     private void styleTable(JTable table) {
-
         table.setRowHeight(40);
-
-        table.setFont(
-                new Font("Segoe UI", Font.PLAIN, 14)
-        );
-
-        table.getTableHeader().setFont(
-                new Font("Segoe UI", Font.BOLD, 14)
-        );
-
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         table.getTableHeader().setBackground(PRIMARY_COLOR);
-
         table.getTableHeader().setForeground(Color.WHITE);
-
-        table.setSelectionBackground(
-                new Color(220, 235, 255)
-        );
-
-        table.setGridColor(
-                new Color(240, 240, 240)
-        );
-
+        table.setSelectionBackground(new Color(220, 235, 255));
+        table.setGridColor(new Color(240, 240, 240));
         table.setShowVerticalLines(false);
     }
 
-    /*
-     * =========================================
-     * CARD
-     * =========================================
-     */
-
     private JPanel createCardPanel(String title) {
-
-        JPanel panel =
-                new JPanel(new BorderLayout());
-
+        JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
-
-        panel.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(
-                                new Color(230, 230, 230)
-                        ),
-                        new EmptyBorder(
-                                15,
-                                15,
-                                15,
-                                15
-                        )
-                )
-        );
-
-        JLabel lblTitle =
-                new JLabel(title);
-
-        lblTitle.setFont(
-                new Font("Segoe UI", Font.BOLD, 18)
-        );
-
-        lblTitle.setBorder(
-                new EmptyBorder(0, 0, 15, 0)
-        );
-
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(230, 230, 230)),
+                new EmptyBorder(15, 15, 15, 15)
+        ));
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblTitle.setBorder(new EmptyBorder(0, 0, 15, 0));
         panel.add(lblTitle, BorderLayout.NORTH);
-
         return panel;
     }
 
-    /*
-     * =========================================
-     * BUTTON
-     * =========================================
-     */
-
-    private JButton createButton(
-            String text,
-            Color color
-    ) {
-
-        JButton button =
-                new JButton(text);
-
+    private JButton createButton(String text, Color color) {
+        JButton button = new JButton(text);
         button.setBackground(color);
-
         button.setForeground(Color.WHITE);
-
         button.setFocusPainted(false);
-
         button.setBorderPainted(false);
-
-        button.setFont(
-                new Font("Segoe UI", Font.BOLD, 14)
-        );
-
-        button.setPreferredSize(
-                new Dimension(150, 42)
-        );
-
-        button.setCursor(
-                new Cursor(Cursor.HAND_CURSOR)
-        );
-
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setPreferredSize(new Dimension(150, 42));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return button;
     }
-    ///load data
+
     private void loadData() {
+        itineraryModel.setRowCount(0);
+        itinerarySteps.clear();
+        StepRoadMapController stepController = new StepRoadMapController();
+        List<RoadmapModel> roadmapList = roadmapController.getAllRoadmap();
 
-    // Xóa dữ liệu cũ
-    itineraryModel.setRowCount(0);
-
-    // clear map step
-    itinerarySteps.clear();
-
-    StepRoadMapController stepController =
-            new StepRoadMapController();
-
-    List<RoadmapModel> roadmapList =
-            roadmapController.getAllRoadmap();
-
-    int stt = 1;
-
-    for (RoadmapModel roadmap : roadmapList) {
-
-
-        itineraryModel.addRow(new Object[]{
-
-                roadmap.getId(),
-
-                roadmap.getTitle(),
-
-                roadmap.getDescription(),
-
-                roadmap.getDatecreate()
-        });
-
-        // =========================
-        // LOAD STEP THEO ROADMAP ID
-        // =========================
-
-        List<StepRoadMapModel> stepList =
-                stepController.getStepsByRouteId(
-                        roadmap.getId()
-                );
-
-        ArrayList<Object[]> stepData =
-                new ArrayList<>();
-
-        for (StepRoadMapModel step : stepList) {
-
-            stepData.add(new Object[]{
-
-                    step.getId(),
-
-                    step.getStageName(),
-
-                    step.getSequenceOrder(),
-
-                    step.getDelay() + " ngày",
-
-                    step.getAppointmentDate(),
-
-                    step.getStatus(),
-
-                    step.getCost(),
-
-                    step.getNote()
+        for (RoadmapModel roadmap : roadmapList) {
+            itineraryModel.addRow(new Object[]{
+                    roadmap.getId(), roadmap.getTitle(), roadmap.getDescription(), roadmap.getDatecreate()
             });
+
+            List<StepRoadMapModel> stepList = stepController.getStepsByRouteId(roadmap.getId());
+            ArrayList<Object[]> stepData = new ArrayList<>();
+            for (StepRoadMapModel step : stepList) {
+                stepData.add(new Object[]{
+                        step.getId(), step.getStageName(), step.getSequenceOrder(),
+                        step.getDelay() + " ngày", step.getAppointmentDate(),
+                        step.getStatus(), step.getCost(), step.getNote()
+                });
+            }
+            itinerarySteps.put(roadmap.getId(), stepData);
         }
-
-        // =========================
-        // LƯU THEO ROADMAP ID
-        // =========================
-
-        itinerarySteps.put(
-                roadmap.getId(),
-                stepData
-        );
-
-        stt++;
     }
-}
-
 }

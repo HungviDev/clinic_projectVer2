@@ -176,7 +176,7 @@ public class AppointmentController {
 
 //         ps.setDate(4, sqlDate);
 
-//         ps.setString(5, "Pending");
+//         ps.setString(5, "Đã duyệt");
 
 //         ps.setString(6, note);
 

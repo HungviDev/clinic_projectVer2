@@ -1,31 +1,27 @@
-
 package ui.doctor.Model;
 
 public class MedicalRecordModel {
     private int id;
     private String patientName;
     private String disease;
-    private String startDate;          // Kiểu String dd/MM/yyyy
-    private String endDate;            // Kiểu String dd/MM/yyyy
-    private int treatmentDurationDays; // Đưa số ngày xuống vị trí thứ 7
+    private String startDate;
+    private int treatmentRouteId;
+    private String routeName;    // Đã thêm để khớp với View
     private String currentStage;
     private String avatarPath;
 
-    // Constructor mặc định
-    public MedicalRecordModel() {}
-
-    // Constructor đầy đủ tham số - Khớp chính xác với Controller
+    // Constructor đầy đủ
     public MedicalRecordModel(int id, String patientName, String disease, 
-                              String startDate, String endDate, int treatmentDurationDays, 
-                              String currentStage, String avatarPath) {
+                              String startDate, int treatmentRouteId, 
+                              String routeName, String avatarPath) {
         this.id = id;
         this.patientName = patientName;
         this.disease = disease;
         this.startDate = startDate;
-        this.endDate = endDate;
-        this.treatmentDurationDays = treatmentDurationDays;
-        this.currentStage = currentStage;
+        this.treatmentRouteId = treatmentRouteId;
+        this.routeName = routeName;
         this.avatarPath = avatarPath;
+        this.currentStage = "Chưa xác định"; // Giá trị mặc định
     }
 
     // Getters và Setters
@@ -41,11 +37,12 @@ public class MedicalRecordModel {
     public String getStartDate() { return startDate; }
     public void setStartDate(String startDate) { this.startDate = startDate; }
 
-    public String getEndDate() { return endDate; }
-    public void setEndDate(String endDate) { this.endDate = endDate; }
+    public int getTreatmentRouteId() { return treatmentRouteId; }
+    public void setTreatmentRouteId(int treatmentRouteId) { this.treatmentRouteId = treatmentRouteId; }
 
-    public int getTreatmentDurationDays() { return treatmentDurationDays; }
-    public void setTreatmentDurationDays(int treatmentDurationDays) { this.treatmentDurationDays = treatmentDurationDays; }
+    // Phương thức này giải quyết lỗi "getRouteName() is undefined"
+    public String getRouteName() { return routeName; }
+    public void setRouteName(String routeName) { this.routeName = routeName; }
 
     public String getCurrentStage() { return currentStage; }
     public void setCurrentStage(String currentStage) { this.currentStage = currentStage; }

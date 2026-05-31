@@ -11,6 +11,8 @@ import ui.admin.OrderView;
 import ui.admin.ServicesView;
 import ui.admin.UserView;
 import ui.auth.LoginForm;
+import ui.doctor.View.DoctorDashboardView;
+import ui.doctor.View.MedicalRecordView;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -21,8 +23,6 @@ import controller.user.DashboardController;
 import model.user.User;
 
 import java.awt.*;
-import ui.doctor.View.DoctorDashboardView;
-import ui.doctor.View.MedicalRecordView;
 
 public class MainDashboard extends JFrame {
 
@@ -129,17 +129,24 @@ public class MainDashboard extends JFrame {
         if(controller.isDoctor()) {
             JButton btnSchedule = createMenuButton("Lịch khám");
             JButton btnMedical = createMenuButton("Hồ sơ bệnh án");
+            JButton btnItinary = createMenuButton("Quản lý lộ trình điều trị");
             JButton btnPatients = createMenuButton("Bệnh nhân");
-
+            
             sidebar.add(btnSchedule);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnMedical);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
+            sidebar.add(btnItinary);
+            sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
+            sidebar.add(btnItinary);
+            sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnPatients);
+           
 
             btnSchedule.addActionListener(e -> cardLayout.show(contentPanel, "SCHEDULE"));
             btnMedical.addActionListener(e -> cardLayout.show(contentPanel, "MEDICAL"));
             btnPatients.addActionListener(e -> cardLayout.show(contentPanel, "PATIENTS"));
+            btnItinary.addActionListener(e -> cardLayout.show(contentPanel, "ITINERARY"));
         }
 
         // ================= ADMIN (Role = 1) =================
@@ -210,7 +217,9 @@ public class MainDashboard extends JFrame {
         {contentPanel.add(new DoctorDashboardView(userId,userName), "HOME");
             contentPanel.add(new ui.doctor.View.AppointmentView(userId), "SCHEDULE"); //đây
             contentPanel.add(new MedicalRecordView(userId), "MEDICAL"); //đây
-            contentPanel.add(createPagePanel("BỆNH NHÂN", "Danh sách bệnh nhân"), "PATIENTS");
+            contentPanel.add(new ItinereryView(),"ITINERARY");
+            contentPanel.add(new ui.doctor.View.PatientView(userId), "PATIENTS");
+           
         }
         
         // (Admin)

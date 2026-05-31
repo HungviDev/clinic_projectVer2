@@ -1,4 +1,3 @@
-
 package ui.doctor.View;
 
 import java.awt.*;
@@ -11,11 +10,12 @@ public class MedicalRecordCard extends JPanel {
     public MedicalRecordCard(MedicalRecordModel record, Runnable onEdit, Runnable onDelete) {
         setLayout(new BorderLayout(20, 0));
         setBackground(Color.WHITE);
-        setMaximumSize(new Dimension(Integer.MAX_VALUE, 230));
+        // Giảm chiều cao xuống vì đã bớt thông tin
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, 180)); 
 
         setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(225, 230, 235), 1, true),
-                new EmptyBorder(18, 20, 18, 20)
+                new EmptyBorder(15, 20, 15, 20)
         ));
 
         add(createAvatarPanel(), BorderLayout.WEST);
@@ -26,10 +26,10 @@ public class MedicalRecordCard extends JPanel {
     private JPanel createAvatarPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(110, 110));
+        panel.setPreferredSize(new Dimension(90, 90));
 
         JLabel lblAvatar = new JLabel("👤", SwingConstants.CENTER);
-        lblAvatar.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 52));
+        lblAvatar.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 45));
         lblAvatar.setOpaque(true);
         lblAvatar.setBackground(new Color(235, 245, 255));
         lblAvatar.setForeground(new Color(52, 152, 219));
@@ -39,44 +39,38 @@ public class MedicalRecordCard extends JPanel {
         return panel;
     }
 
-  private JPanel createInfoPanel(MedicalRecordModel record) {
-    JPanel panel = new JPanel();
-    panel.setOpaque(false);
-    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+    private JPanel createInfoPanel(MedicalRecordModel record) {
+        JPanel panel = new JPanel();
+        panel.setOpaque(false);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-    // --- THÊM DÒNG NÀY ĐỂ HIỂN THỊ TÊN ---
-    JLabel lblName = new JLabel("Bệnh nhân: " + record.getPatientName());
-    lblName.setFont(new Font("Segoe UI", Font.BOLD, 16)); // Tên nên để chữ to hơn chút
-    // ------------------------------------
+        JLabel lblName = new JLabel("Bệnh nhân: " + record.getPatientName());
+        lblName.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblName.setForeground(new Color(44, 62, 80));
 
-    JLabel lblDisease = new JLabel("Bệnh lý: " + record.getDisease());
-    lblDisease.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        JLabel lblDisease = new JLabel("Bệnh lý: " + record.getDisease());
+        lblDisease.setFont(new Font("Segoe UI", Font.PLAIN, 15));
 
-    JLabel lblDuration = new JLabel("Tổng thời gian điều trị: " + record.getTreatmentDurationDays() + " ngày");
-    lblDuration.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        JLabel lblStartDate = new JLabel("Ngày bắt đầu: " + record.getStartDate());
+        lblStartDate.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblStartDate.setForeground(new Color(100, 100, 100));
 
-    String dateRange = record.getStartDate() + "  ➔  " + record.getEndDate();
-    JLabel lblDates = new JLabel("Thời hạn: " + dateRange);
-    lblDates.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        JLabel lblStage = new JLabel("Lộ trình/Giai đoạn: " + record.getCurrentStage());
+        lblStage.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblStage.setForeground(new Color(39, 174, 96)); // Màu xanh lá cho lộ trình
 
-    JLabel lblStage = new JLabel("Giai đoạn điều trị: " + record.getCurrentStage());
-    lblStage.setFont(new Font("Segoe UI", Font.BOLD, 14));
-    lblStage.setForeground(new Color(41, 128, 185));
+        panel.add(Box.createVerticalGlue());
+        panel.add(lblName);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(lblDisease);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(lblStartDate);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(lblStage);
+        panel.add(Box.createVerticalGlue());
 
-    // Thêm lblName vào panel (nên để ở trên cùng)
-    panel.add(Box.createVerticalStrut(8));
-    panel.add(lblName); 
-    panel.add(Box.createVerticalStrut(5));
-    panel.add(lblDisease);
-    panel.add(Box.createVerticalStrut(5));
-    panel.add(lblDuration);
-    panel.add(Box.createVerticalStrut(5));
-    panel.add(lblDates);
-    panel.add(Box.createVerticalStrut(5));
-    panel.add(lblStage);
-
-    return panel;
-}
+        return panel;
+    }
 
     private JPanel createActionPanel(Runnable onEdit, Runnable onDelete) {
         JPanel panel = new JPanel();
@@ -86,10 +80,9 @@ public class MedicalRecordCard extends JPanel {
         JButton btnEdit = createButton("Cập nhật", new Color(52, 152, 219));
         JButton btnDelete = createButton("Xóa bỏ", new Color(231, 76, 60));
 
+        // Căn giữa nút
         btnEdit.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnDelete.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btnEdit.setMaximumSize(new Dimension(120, 38));
-        btnDelete.setMaximumSize(new Dimension(120, 38));
 
         btnEdit.addActionListener(e -> { if (onEdit != null) onEdit.run(); });
         btnDelete.addActionListener(e -> { if (onDelete != null) onDelete.run(); });
@@ -108,9 +101,10 @@ public class MedicalRecordCard extends JPanel {
         btn.setFocusPainted(false);
         btn.setBackground(color);
         btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setBorder(new EmptyBorder(8, 15, 8, 15));
+        btn.setPreferredSize(new Dimension(100, 35));
+        btn.setMaximumSize(new Dimension(100, 35));
         return btn;
     }
 }

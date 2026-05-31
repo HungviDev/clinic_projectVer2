@@ -12,44 +12,52 @@ import ui.doctor.Model.DoctorDashboardModel;
 public class DoctorDashboardController {
 
     // =====================================================
-    // TẢI DỮ LIỆU TỔNG QUAN (KPI CARDS)
+    // TẢI DỮ LIỆU TỔNG QUAN (KPI CARDS) - ĐÃ FIX THEO DOCTOR USER_ID
     // =====================================================
-    public DoctorDashboardModel getDashboardData(int doctorId) {
+    public DoctorDashboardModel getDashboardData(int doctorUserId) {
         DoctorDashboardModel model = new DoctorDashboardModel();
         
+        // 1. Chỉ đếm những lịch hẹn HÔM NAY và ĐÃ DUYỆT (approved) của bác sĩ này
         String sqlAppointmentsToday = 
-                "SELECT COUNT(*) FROM appointments " +
-                "WHERE doctor_id = ? AND CAST(appointment_date AS DATE) = CAST(GETDATE() AS DATE)";
+                "SELECT COUNT(*) FROM appointments a " +
+                "JOIN doctors d ON a.doctor_id = d.id " +
+                "WHERE d.user_id = ? AND a.status = 'approved' AND CAST(a.appointment_date AS DATE) = CAST(GETDATE() AS DATE)";
                 
+        // 2. Số bệnh nhân bác sĩ này đang điều trị (Dựa trên bệnh án do bác sĩ phụ trách)
         String sqlPatientsTreating = 
-                "SELECT COUNT(DISTINCT user_id) FROM medical_records " +
-                "WHERE doctor_id = ?"; 
+                "SELECT COUNT(DISTINCT r.user_id) FROM medical_records r " +
+                "JOIN doctors d ON r.doctor_id = d.id " +
+                "WHERE d.user_id = ?"; 
                 
+        // 3. Ca hoàn thành trong tháng (Đã chuyển sang trạng thái chuẩn 'completed')
         String sqlCompletedMonth = 
-                "SELECT COUNT(*) FROM appointments " +
-                "WHERE doctor_id = ? AND status = 'done' " +
-                "AND MONTH(appointment_date) = MONTH(GETDATE()) " +
-                "AND YEAR(appointment_date) = YEAR(GETDATE())";
+                "SELECT COUNT(*) FROM appointments a " +
+                "JOIN doctors d ON a.doctor_id = d.id " +
+                "WHERE d.user_id = ? AND a.status = 'completed' " +
+                "AND MONTH(a.appointment_date) = MONTH(GETDATE()) " +
+                "AND YEAR(a.appointment_date) = YEAR(GETDATE())";
                 
+        // 4. Doanh thu thực tế phát sinh trong ngày hôm nay của riêng bác sĩ này
         String sqlRevenueToday = 
                 "SELECT ISNULL(SUM(p.amount), 0) " +
                 "FROM payments p " +
                 "JOIN appointments a ON p.appointment_id = a.id " +
-                "WHERE a.doctor_id = ? AND CAST(p.created_at AS DATE) = CAST(GETDATE() AS DATE)";
+                "JOIN doctors d ON a.doctor_id = d.id " +
+                "WHERE d.user_id = ? AND CAST(p.created_at AS DATE) = CAST(GETDATE() AS DATE)";
 
         try (Connection conn = DBConnection.getConnection()) {
             
             // 1. Số lịch hẹn hôm nay
             try (PreparedStatement ps = conn.prepareStatement(sqlAppointmentsToday)) {
-                ps.setInt(1, doctorId);
+                ps.setInt(1, doctorUserId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) model.setTotalAppointmentsToday(rs.getInt(1));
                 }
             }
             
-            // 2. Số bệnh nhân đang điều trị (Dựa trên bệnh án do bác sĩ phụ trách)
+            // 2. Số bệnh nhân đang điều trị
             try (PreparedStatement ps = conn.prepareStatement(sqlPatientsTreating)) {
-                ps.setInt(1, doctorId);
+                ps.setInt(1, doctorUserId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) model.setTotalPatientsTreating(rs.getInt(1));
                 }
@@ -57,16 +65,16 @@ public class DoctorDashboardController {
             
             // 3. Ca hoàn thành trong tháng
             try (PreparedStatement ps = conn.prepareStatement(sqlCompletedMonth)) {
-                ps.setInt(1, doctorId);
+                ps.setInt(1, doctorUserId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) model.setCompletedCasesMonth(rs.getInt(1));
                 }
             }
             
-            // 4. Doanh thu thực tế phát sinh trong ngày hôm nay
+            // 4. Doanh thu trong ngày
             try (PreparedStatement ps = conn.prepareStatement(sqlRevenueToday)) {
-                ps.setInt(1, doctorId);
-try (ResultSet rs = ps.executeQuery()) {
+                ps.setInt(1, doctorUserId);
+                try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) model.setRevenueToday(rs.getDouble(1));
                 }
             }
@@ -78,9 +86,9 @@ try (ResultSet rs = ps.executeQuery()) {
     }
 
     // =====================================================
-    // TẢI LỊCH HẸN CHỈ TRONG NGÀY HÔM NAY
+    // TẢI LỊCH HẸN HÔM NAY - CHỈ LẤY LỊCH ĐÃ DUYỆT (APPROVED)
     // =====================================================
-    public List<AppointmentModel> getTodayAppointments(int doctorId) {
+    public List<AppointmentModel> getTodayAppointments(int doctorUserId) {
         List<AppointmentModel> list = new ArrayList<>();
         String sql = "SELECT a.id, " +
                      "FORMAT(a.appointment_date, 'HH:mm') AS time, " +
@@ -90,14 +98,15 @@ try (ResultSet rs = ps.executeQuery()) {
                      "FROM appointments a " +
                      "JOIN users u ON a.user_id = u.id " +
                      "JOIN services s ON a.service_id = s.id " +
-                     "WHERE a.doctor_id = ? " +
+                     "JOIN doctors d ON a.doctor_id = d.id " +
+                     "WHERE d.user_id = ? AND a.status = 'approved' " +
                      "AND CAST(a.appointment_date AS DATE) = CAST(GETDATE() AS DATE) " +
                      "ORDER BY a.appointment_date ASC";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
-            ps.setInt(1, doctorId);
+            ps.setInt(1, doctorUserId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     AppointmentModel ap = new AppointmentModel(
@@ -117,21 +126,9 @@ try (ResultSet rs = ps.executeQuery()) {
     }
 
     // =====================================================
-    // CẬP NHẬT TRẠNG THÁI KHÔNG GIỚI HẠN BỞI 'PENDING'
+    // VÔ HIỆU HÓA HÀM UPDATE STATUS TẠI ĐÂY VÌ KHÔNG DÙNG NỮA
     // =====================================================
     public boolean updateAppointmentStatus(int appointmentId, String newStatus) {
-        // Cho phép cập nhật linh hoạt từ 'approved' sang 'done' hoặc 'reject'
-        String sql = "UPDATE appointments SET status = ? WHERE id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setString(1, newStatus);
-            ps.setInt(2, appointmentId);
-            return ps.executeUpdate() > 0;
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
+        return false; 
     }
 }
