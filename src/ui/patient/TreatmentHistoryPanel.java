@@ -103,7 +103,7 @@ private void loadHistoryFromDatabase(int patientId) {
         // Góc trái: Ngày khám
         JPanel leftHeader = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         leftHeader.setOpaque(false);
-        JLabel lblDateIcon = new JLabel("📅");
+        JLabel lblDateIcon = new JLabel("");
         lblDateIcon.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         JLabel lblDateText = new JLabel("Ngày khám: " + date);
         lblDateText.setFont(new Font("Segoe UI", Font.BOLD, 15));
@@ -112,7 +112,7 @@ private void loadHistoryFromDatabase(int patientId) {
         leftHeader.add(lblDateText);
 
         // Góc phải: Nút "Theo dõi"
-        JButton btnTrack = new JButton("👁 Theo dõi tiến độ");
+        JButton btnTrack = new JButton("Theo dõi tiến độ");
         btnTrack.setFont(new Font("Segoe UI", Font.BOLD, 13));
         btnTrack.setForeground(Color.WHITE);
         btnTrack.setBackground(ICON_COLOR);

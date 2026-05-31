@@ -9,6 +9,7 @@ import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URL; // Đã thêm thư viện này để đọc URL ảnh
 
 public class ProfilePanel extends JPanel {
 
@@ -21,7 +22,13 @@ public class ProfilePanel extends JPanel {
     private final Color SIDEBAR_COLOR_PASTEL = new Color(214, 234, 248); // Xanh biển pastel cực nhạt (Hover)
     private final Color HOVER_COLOR_PASTEL = new Color(93, 173, 226);    // Xanh pastel đậm hơn
 
-    public ProfilePanel(String userName, String phone) {
+    // Biến lưu đường dẫn ảnh
+    private String avatarPath;
+
+    // SỬA HÀM KHỞI TẠO: Thêm tham số avatarPath
+    public ProfilePanel(String userName, String phone, String avatarPath) {
+        this.avatarPath = avatarPath; // Lưu lại
+        
         setLayout(new BorderLayout());
         setBackground(COLOR_BG);
 
@@ -36,13 +43,26 @@ public class ProfilePanel extends JPanel {
         headerPanel.setBorder(new MatteBorder(0, 0, 1, 0, new Color(235, 240, 245))); // Vạch chia đáy
 
         // Avatar tròn (Tông Pastel)
-        JLabel lblAvatar = new JLabel("👤", SwingConstants.CENTER);
-        lblAvatar.setFont(new Font("Segoe UI", Font.PLAIN, 45));
-        lblAvatar.setOpaque(true);
-        lblAvatar.setBackground(SIDEBAR_COLOR_PASTEL); // Nền xanh nhạt
-        lblAvatar.setForeground(HEADER_COLOR_PASTEL); // Icon màu pastel vừa
+        JLabel lblAvatar = new JLabel(); 
         lblAvatar.setPreferredSize(new Dimension(80, 80));
-        lblAvatar.setBorder(BorderFactory.createLineBorder(HEADER_COLOR_PASTEL, 1, true)); // Viền bo nhẹ
+        lblAvatar.setHorizontalAlignment(SwingConstants.CENTER);
+        lblAvatar.setVerticalAlignment(SwingConstants.CENTER);
+        lblAvatar.setOpaque(true);
+        lblAvatar.setBackground(SIDEBAR_COLOR_PASTEL); // Nền phòng hờ nếu không có ảnh
+        lblAvatar.setBorder(BorderFactory.createLineBorder(HEADER_COLOR_PASTEL, 1, true));
+
+        // Dùng hàm load ảnh để lấy avatar
+        ImageIcon avatarIcon = loadScaledImage(this.avatarPath, 80, 80);
+        
+        if (avatarIcon != null) {
+            // Nếu có ảnh -> Hiển thị ảnh
+            lblAvatar.setIcon(avatarIcon);
+        } else {
+            // Nếu không có ảnh -> Hiện icon người dùng mặc định
+            lblAvatar.setText("👤"); 
+            lblAvatar.setFont(new Font("Segoe UI", Font.PLAIN, 45));
+            lblAvatar.setForeground(HEADER_COLOR_PASTEL);
+        }
         
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
@@ -111,7 +131,7 @@ public class ProfilePanel extends JPanel {
         }
     }
 
-    // Hàm tạo 1 dòng Menu: THÊM THAM SỐ Runnable onClick
+    // Hàm tạo 1 dòng Menu
     private JPanel createMenuItem(String icon, String text, boolean hasBottomBorder, Runnable onClick) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
@@ -184,5 +204,27 @@ public class ProfilePanel extends JPanel {
         });
 
         return panel;
+    }
+
+    // ================= HÀM XỬ LÝ ẢNH AVATAR =================
+    private ImageIcon loadScaledImage(String imageFileName, int width, int height) {
+        if (imageFileName == null || imageFileName.trim().isEmpty() || imageFileName.equalsIgnoreCase("NULL")) {
+            return null;
+        }
+        
+        // Giả sử avatar lưu trong thư mục resources. Bạn có thể sửa lại nếu lưu đường dẫn khác.
+        String fullPath = "/resources/" + imageFileName; 
+        
+        try {
+            URL url = getClass().getResource(fullPath);
+            if (url != null) {
+                ImageIcon originalIcon = new ImageIcon(url);
+                Image img = originalIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+                return new ImageIcon(img);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi load avatar: " + fullPath);
+        }
+        return null; 
     }
 }

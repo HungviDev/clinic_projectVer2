@@ -91,7 +91,7 @@ public class HomePatientPanel extends JPanel {
         gridActions.add(createActionButton("Lịch hẹn của tôi", "/resources/lich_hen.png", () -> switchPage("SCHEDULE"))); 
         gridActions.add(createActionButton("Liên hệ", "/resources/phone.png", () -> switchPage("CONTACT")));
         gridActions.add(createActionButton("Lịch sử điều trị", "/resources/lock.png", () -> switchPage("MEDICAL_RECORD")));
-        gridActions.add(createActionButton("Sản phẩm", "/resources/san_pham.png", () -> switchPage("CART")));
+        gridActions.add(createActionButton("Cá nhân", "/resources/ca_nhan.png", () -> switchPage("PROFILE")));
         gridActions.add(createActionButton("Danh mục dịch vụ", "/resources/dich_vu.png", () -> switchPage("SERVICE")));
 
         JPanel gridWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));

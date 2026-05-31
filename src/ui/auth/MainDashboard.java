@@ -61,6 +61,7 @@ public class MainDashboard extends JFrame {
         Date birth_date = user.getBirthDate();
         String email = user.getEmail();
         int role = user.getRoleId();
+        String avatarPath = user.getAvatar();
 
         setTitle("Hệ Thống Nha Khoa Việt Anh");
         setSize(1200, 800);
@@ -201,10 +202,10 @@ public class MainDashboard extends JFrame {
             // contentPanel.add(createPagePanel("GIỎ HÀNG", ""), "CART");
             contentPanel.add(new ContactPanel(), "CONTACT");
             
-            contentPanel.add(new ProfilePanel(userName, userPhone), "PROFILE");
+            contentPanel.add(new ProfilePanel(userName, userPhone, avatarPath), "PROFILE");
             contentPanel.add(new TreatmentHistoryPanel(userId), "MEDICAL_RECORD");
             contentPanel.add(new PaymentHistoryPanel(userId), "PAYMENT_HISTORY");   
-            contentPanel.add(new EditProfilePanel(userId, userName, userPhone,  birth_date, address, email), "EDIT_PROFILE"); 
+            contentPanel.add(new EditProfilePanel(userId, userName, userPhone,  birth_date, address, email, avatarPath), "EDIT_PROFILE"); 
             appointmentsPanel = new MyAppointmentsPanel(userId);
 
             contentPanel.add(appointmentsPanel, "SCHEDULE");
@@ -319,14 +320,15 @@ public class MainDashboard extends JFrame {
             lblUser.setText("Xin chào " + controller.getRoleName() + " " + updatedUser.getFullName());
 
             // Ghi đè lại 2 trang Profile bằng Panel mới chứa dữ liệu vừa cập nhật
-            contentPanel.add(new ProfilePanel(updatedUser.getFullName(), updatedUser.getPhone()), "PROFILE");
+            contentPanel.add(new ProfilePanel(updatedUser.getFullName(), updatedUser.getPhone(), updatedUser.getAvatar()), "PROFILE");
             contentPanel.add(new EditProfilePanel(
                 updatedUser.getId(), 
                 updatedUser.getFullName(), 
                 updatedUser.getPhone(), 
                 updatedUser.getBirthDate(), 
                 updatedUser.getAddress(), 
-                updatedUser.getEmail()
+                updatedUser.getEmail(), 
+                updatedUser.getAvatar()
             ), "EDIT_PROFILE");
 
             // Làm mới giao diện

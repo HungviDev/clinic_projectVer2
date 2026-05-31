@@ -201,29 +201,33 @@ public class ServicePatientPanel extends JPanel {
         return card;
     }
 
-    // ================= HÀM XỬ LÝ ẢNH (CHỐNG LỖI) =================
-    private ImageIcon loadScaledImage(String imagePath, int width, int height) {
-        if (imagePath == null || imagePath.trim().isEmpty()) return null;
+// ================= HÀM XỬ LÝ ẢNH TỪ DATABASE =================
+    private ImageIcon loadScaledImage(String imageFileName, int width, int height) {
+        // 1. Nếu Database lưu NULL hoặc rỗng -> Trả về null để hiện icon Răng mặc định
+        if (imageFileName == null || imageFileName.trim().isEmpty() || imageFileName.equalsIgnoreCase("NULL")) {
+            return null;
+        }
+        
+        // 2. Ghép thư mục chứa ảnh vào trước tên file
+        String fullPath = "/resources/" + imageFileName; 
         
         try {
-            // Thử load ảnh từ Resources
-            URL url = getClass().getResource(imagePath);
+            // 3. Load ảnh từ thư mục Resources
+            URL url = getClass().getResource(fullPath);
+            
             if (url != null) {
                 ImageIcon originalIcon = new ImageIcon(url);
                 Image img = originalIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
                 return new ImageIcon(img);
+            } else {
+                System.err.println("Chưa có file ảnh này trong thư mục resources: " + fullPath);
             }
             
-            // Hoặc thử load ảnh trực tiếp từ đường dẫn tuyệt đối
-            ImageIcon originalIcon = new ImageIcon(imagePath);
-            if (originalIcon.getIconWidth() > 0) {
-                Image img = originalIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
-                return new ImageIcon(img);
-            }
         } catch (Exception e) {
-            System.err.println("Không tìm thấy ảnh: " + imagePath);
+            System.err.println("Lỗi khi load ảnh: " + fullPath);
         }
-        return null; 
+        
+        return null; // Nếu lỗi cũng trả về null để hiện icon Răng
     }
 
     // ================= HÀM HỖ TRỢ CHUYỂN TRANG =================
