@@ -2,6 +2,8 @@ package ui.admin;
 
 import controller.admin.AppointmentController;
 import model.admin.AppointmentModel;
+import ui.admin.form.AppointmentForm;
+import ui.admin.form.UserAddForm;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -92,7 +94,7 @@ public class AppointmentView extends JPanel {
 
         JButton btnAdd =
                 createButton(
-                        "Thêm",
+                        "Tạo mới cuộc hẹn",
                         SUCCESS_COLOR
                 );
 
@@ -113,7 +115,15 @@ public class AppointmentView extends JPanel {
         buttonPanel.add(btnDelete);
 
         buttonPanel.add(btnRefresh);
+        btnAdd.addActionListener(e ->{
+            JFrame parentFrame =
+                    (JFrame) SwingUtilities
+                            .getWindowAncestor(this);
+            AppointmentForm form =
+                    new AppointmentForm(parentFrame);
 
+            form.setVisible(true);
+        });
         // =====================================
         // REFRESH EVENT
         // =====================================

@@ -94,4 +94,62 @@ public class StepRoadMapController {
 
         return stepList;
     }
+    public boolean insertStepByRouteId(StepRoadMapModel step) {
+
+    try {
+
+        Connection conn =
+                config.DBConnection.getConnection();
+
+        String sql =
+        "INSERT INTO treatment_stages (" +
+                "treatment_route_id, " +
+                "stage_name, " +
+                "sequence_order, " +
+                "status, " +
+                "note, " +
+                "created_at, " +
+                "updated_at, " +
+                "cost, " +
+                "delay" +
+                ") VALUES (?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?, ?)";
+
+        PreparedStatement ps =
+                conn.prepareStatement(sql);
+
+        ps.setInt(
+                1,
+                step.getTreatmentRouteId()
+        );
+
+        ps.setString(
+                2,
+                step.getStageName()
+        );
+
+        ps.setInt(
+                3,
+                step.getSequenceOrder()
+        );
+
+        ps.setString(
+                4,
+                step.getStatus()
+        );
+
+        ps.setString(5, step.getNote());
+
+        ps.setDouble(6, step.getCost());
+
+        ps.setInt(7, step.getDelay());
+
+        return ps.executeUpdate() > 0;
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+    }
+
+    return false;
+}
 }

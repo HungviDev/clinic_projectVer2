@@ -90,6 +90,82 @@ public class DoctorController {
 
         return userList;
     }
+    public List<String> getAllDoctorNames() {
+
+    List<String> doctorList = new ArrayList<>();
+
+    try {
+
+        Connection conn = DBConnection.getConnection();
+
+        String sql = """
+                SELECT fullname
+                FROM doctors, users
+                WHERE users.id = user_id
+                AND users.role_id = 2
+                """;
+
+        PreparedStatement ps = conn.prepareStatement(sql);
+
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()) {
+
+            doctorList.add(
+                    rs.getString("fullname")
+            );
+        }
+
+        rs.close();
+        ps.close();
+        conn.close();
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+    }
+
+    return doctorList;
+}
+        public int getDoctorIdByFullName(String fullName) {
+
+    int id = -1;
+
+    try {
+
+        Connection conn = DBConnection.getConnection();
+
+        String sql = """
+                SELECT doctors.id
+                FROM doctors, users
+                WHERE users.id = user_id
+                AND users.role_id = 2
+                AND users.fullname = ?
+                """;
+
+        PreparedStatement ps =
+                conn.prepareStatement(sql);
+
+        ps.setString(1, fullName);
+
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+
+            id = rs.getInt("id");
+        }
+
+        rs.close();
+        ps.close();
+        conn.close();
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+    }
+
+    return id;
+}
     public static void main(String[] args) {
         List<DoctorModel> userList = new DoctorController().getAllDoctor();
         System.out.println(userList.size()+"hiển thị danh sách bác sĩ");

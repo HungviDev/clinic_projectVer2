@@ -16,159 +16,173 @@ public class UserController {
     // =====================================
     // GET ALL USERS
     // =====================================
-    public List<UserModel> getAllUsers() {
+        public List<UserModel> getAllUsers() {
 
-        List<UserModel> userList = new ArrayList<>();
+                List<UserModel> userList = new ArrayList<>();
+
+                try {
+
+                Connection conn = DBConnection.getConnection();
+
+                String sql = "SELECT * FROM users where role_id = 3";
+
+                PreparedStatement ps = conn.prepareStatement(sql);
+
+                ResultSet rs = ps.executeQuery();
+
+                while (rs.next()) {
+
+                        UserModel user = new UserModel();
+
+                        user.setId(
+                                rs.getInt("id")
+                        );
+
+                        user.setFullName(
+                                rs.getString("fullname")
+                        );
+
+                        user.setPhone(
+                                rs.getString("phone")
+                        );
+
+                        user.setPassword(
+                                rs.getString("password")
+                        );
+
+                        user.setBirthDate(
+                                rs.getDate("birth_date")
+                        );
+
+                        user.setAddress(
+                                rs.getString("address")
+                        );
+
+                        user.setAvatar(
+                                rs.getString("avatar")
+                        );
+                        user.setEmail(
+                                rs.getString("email")
+                        );
+                        userList.add(user);
+                }
+
+                rs.close();
+
+                ps.close();
+
+                conn.close();
+
+                } catch (Exception e) {
+
+                e.printStackTrace();
+                }
+
+                return userList;
+        }
+        public boolean insertUser(UserModel user) {
 
         try {
 
-            Connection conn = DBConnection.getConnection();
+                Connection conn = DBConnection.getConnection();
 
-            String sql = "SELECT * FROM users where role_id = 3";
+                String sql = """
+                        INSERT INTO users(
+                        fullname,
+                        phone,
+                        password,
+                        birth_date,
+                        address,
+                        avatar,
+                        role_id,
+                        email
+                        )
+                        VALUES(?,?,?,?,?,?,?,?)
+                        """;
 
-            PreparedStatement ps = conn.prepareStatement(sql);
+                PreparedStatement ps =
+                        conn.prepareStatement(sql);
 
-            ResultSet rs = ps.executeQuery();
+                ps.setString(1, user.getFullName());
 
-            while (rs.next()) {
+                ps.setString(2, user.getPhone());
 
-                UserModel user = new UserModel();
+                ps.setString(3, user.getPassword());
 
-                user.setId(
-                        rs.getInt("id")
+                ps.setDate(
+                        4,
+                        new java.sql.Date(
+                                user.getBirthDate().getTime()
+                        )
                 );
 
-                user.setFullName(
-                        rs.getString("fullname")
-                );
+                ps.setString(5, user.getAddress());
 
-                user.setPhone(
-                        rs.getString("phone")
-                );
+                ps.setString(6, user.getAvatar());
 
-                user.setPassword(
-                        rs.getString("password")
-                );
+                // role mặc định = 3
+                ps.setInt(7, 3);
 
-                user.setBirthDate(
-                        rs.getDate("birth_date")
-                );
+                ps.setString(8, user.getEmail());
 
-                user.setAddress(
-                        rs.getString("address")
-                );
+                int result = ps.executeUpdate();
 
-                user.setAvatar(
-                        rs.getString("avatar")
-                );
-                user.setEmail(
-                        rs.getString("email")
-                );
-                userList.add(user);
-            }
+                ps.close();
 
-            rs.close();
+                conn.close();
 
-            ps.close();
-
-            conn.close();
+                return result > 0;
 
         } catch (Exception e) {
 
-            e.printStackTrace();
+                e.printStackTrace();
+
+                return false;
         }
+        }
+        public boolean deleteUser(int id) {
+        Connection conn = null;
+        PreparedStatement ps = null;
 
-        return userList;
-    }
-    public boolean insertUser(UserModel user) {
+        try {
 
-    try {
+                conn = DBConnection.getConnection();
 
-        Connection conn = DBConnection.getConnection();
+                String sql =
+                        "DELETE FROM users WHERE id = ?";
 
-        String sql = """
-                INSERT INTO users(
-                    fullname,
-                    phone,
-                    password,
-                    birth_date,
-                    address,
-                    avatar,
-                    role_id,
-                    email
-                )
-                VALUES(?,?,?,?,?,?,?,?)
-                """;
+                ps = conn.prepareStatement(sql);
 
-        PreparedStatement ps =
-                conn.prepareStatement(sql);
+                ps.setInt(1, id);
 
-        ps.setString(1, user.getFullName());
+                int result =
+                        ps.executeUpdate();
 
-        ps.setString(2, user.getPhone());
+                return result > 0;
 
-        ps.setString(3, user.getPassword());
+        } catch (Exception e) {
 
-        ps.setDate(
-                4,
-                new java.sql.Date(
-                        user.getBirthDate().getTime()
-                )
-        );
+                e.printStackTrace();
+        } finally {
 
-        ps.setString(5, user.getAddress());
+                try {
 
-        ps.setString(6, user.getAvatar());
+                if (ps != null) {
+                        ps.close();
+                }
 
-        // role mặc định = 3
-        ps.setInt(7, 3);
+                if (conn != null) {
+                        conn.close();
+                }
 
-        ps.setString(8, user.getEmail());
+                } catch (Exception e) {
 
-        int result = ps.executeUpdate();
-
-        ps.close();
-
-        conn.close();
-
-        return result > 0;
-
-    } catch (Exception e) {
-
-        e.printStackTrace();
+                e.printStackTrace();
+                }
+        }
 
         return false;
-    }
-}
-public boolean deleteUser(int id) {
-
-        try {
-
-            Connection conn = DBConnection.getConnection();
-
-            String sql =
-                    "DELETE FROM users WHERE id = ?";
-
-            PreparedStatement ps =
-                    conn.prepareStatement(sql);
-
-            ps.setInt(1, id);
-
-            int result = ps.executeUpdate();
-
-            ps.close();
-
-            conn.close();
-
-            return result > 0;
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            return false;
         }
-    }
      public boolean updateUser(UserModel user) {
         try {
             Connection conn = DBConnection.getConnection();
@@ -355,20 +369,106 @@ public boolean deleteUser(int id) {
 
     return user;
 }
-        public static void main(String[] args) {
-            UserController controller = new UserController();
+        public List<String> getAllPatients() {
 
-        UserModel user = controller.getUserByPhone("03377928757");
+    List<String> patients = new ArrayList<>();
 
-        if (user != null) {
+    Connection conn = DBConnection.getConnection();
 
-                System.out.println("ID: " + user.getId());
-                System.out.println("Name: " + user.getFullName());
-                System.out.println("Phone: " + user.getPhone());
+    String sql = "SELECT fullname FROM users WHERE role_id = 3";
 
-        } else {
+    try {
 
-                System.out.println("Không tìm thấy user");
+        PreparedStatement ps = conn.prepareStatement(sql);
+
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()) {
+
+            patients.add(rs.getString("fullname"));
+        }
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
     }
+
+    return patients;
+}
+        public int getPatientIdByFullName(String fullName) {
+
+        int id = -1;
+
+        Connection conn = DBConnection.getConnection();
+
+        String sql = """
+                SELECT id
+                FROM users
+                WHERE fullname = ?
+                AND role_id = 3
+                """;
+
+        try {
+
+                PreparedStatement ps =
+                        conn.prepareStatement(sql);
+
+                ps.setString(1, fullName);
+
+                ResultSet rs = ps.executeQuery();
+
+                if (rs.next()) {
+
+                id = rs.getInt("id");
+                }
+
+                rs.close();
+                ps.close();
+                conn.close();
+
+        } catch (Exception e) {
+
+                e.printStackTrace();
+        }
+
+        return id;
+        }
+        public String getPatientEmailByFullName(String fullName) {
+
+        String email = "";
+
+        Connection conn = DBConnection.getConnection();
+
+        String sql = """
+                SELECT email
+                FROM users
+                WHERE fullname = ?
+                AND role_id = 3
+                """;
+
+        try {
+
+                PreparedStatement ps =
+                        conn.prepareStatement(sql);
+
+                ps.setString(1, fullName);
+
+                ResultSet rs = ps.executeQuery();
+
+                if (rs.next()) {
+
+                email = rs.getString("email");
+                }
+
+                rs.close();
+                ps.close();
+                conn.close();
+
+        } catch (Exception e) {
+
+                e.printStackTrace();
+        }
+
+        return email;
         }
 }

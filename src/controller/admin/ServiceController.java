@@ -114,6 +114,82 @@ public class ServiceController {
 
     return total;
 }
+public List<String> getAllServiceNames() {
+
+    List<String> serviceNames =
+            new ArrayList<>();
+
+    try {
+
+        Connection conn =
+                DBConnection.getConnection();
+
+        String sql =
+                "SELECT name FROM services";
+
+        PreparedStatement ps =
+                conn.prepareStatement(sql);
+
+        ResultSet rs =
+                ps.executeQuery();
+
+        while (rs.next()) {
+
+            serviceNames.add(
+                    rs.getString("name")
+            );
+        }
+
+        rs.close();
+        ps.close();
+        conn.close();
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+    }
+
+    return serviceNames;
+}
+public int getServiceIdByName(String name) {
+
+    int id = -1;
+
+    try {
+
+        Connection conn =
+                DBConnection.getConnection();
+
+        String sql = """
+                SELECT id
+                FROM services
+                WHERE name = ?
+                """;
+
+        PreparedStatement ps =
+                conn.prepareStatement(sql);
+
+        ps.setString(1, name);
+
+        ResultSet rs =
+                ps.executeQuery();
+
+        if (rs.next()) {
+
+            id = rs.getInt("id");
+        }
+
+        rs.close();
+        ps.close();
+        conn.close();
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+    }
+
+    return id;
+}
     public static void main(String[] args) {
         List<ServiceModel> userList = new ServiceController().getAllService();
         System.out.println(userList.size()+"hiển thị danh sách bác sĩ");

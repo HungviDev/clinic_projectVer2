@@ -132,14 +132,11 @@ public class UserView extends JPanel {
         // ADD EVENT
         // =====================================
         btnAdd.addActionListener(e -> {
-
             JFrame parentFrame =
                     (JFrame) SwingUtilities
                             .getWindowAncestor(this);
-
             UserAddForm form =
                     new UserAddForm(parentFrame);
-
             form.setVisible(true);
         });
         btnDetail.addActionListener(e->{
@@ -171,16 +168,12 @@ public class UserView extends JPanel {
         // DELETE EVENT
         // =====================================
         btnDelete.addActionListener(e -> {
-
             int row = table.getSelectedRow();
-
             if (row == -1) {
-
                 JOptionPane.showMessageDialog(
                         this,
                         "Vui lòng chọn người dùng"
                 );
-
                 return;
             }
 
@@ -204,7 +197,6 @@ public class UserView extends JPanel {
                         userController.deleteUser(id);
 
                 if (result) {
-
                     JOptionPane.showMessageDialog(
                             this,
                             "Xóa thành công"
