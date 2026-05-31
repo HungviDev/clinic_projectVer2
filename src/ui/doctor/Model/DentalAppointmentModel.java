@@ -8,6 +8,9 @@ public class DentalAppointmentModel {
     private String appointmentTime;
     private String problem;
     private String status;
+    
+    // THÊM BIẾN MỚI
+    private String stageName;
 
     public DentalAppointmentModel() {
     }
@@ -18,7 +21,8 @@ public class DentalAppointmentModel {
             String appointmentDate,
             String appointmentTime,
             String problem,
-            String status
+            String status,
+            String stageName // Cập nhật constructor
     ) {
         this.id = id;
         this.patientName = patientName;
@@ -26,6 +30,7 @@ public class DentalAppointmentModel {
         this.appointmentTime = appointmentTime;
         this.problem = problem;
         this.status = status;
+        this.stageName = stageName; // Gán giá trị
     }
 
     public int getId() {
@@ -74,5 +79,16 @@ public class DentalAppointmentModel {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    // ==========================================
+    // GETTER & SETTER CHO STAGE_NAME
+    // ==========================================
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
     }
 }

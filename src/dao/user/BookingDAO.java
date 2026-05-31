@@ -1,11 +1,10 @@
 package dao.user;
 
 import config.DBConnection;
-import model.user.Booking;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import model.user.Booking;
 
 public class BookingDAO {
 
