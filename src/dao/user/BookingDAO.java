@@ -13,8 +13,8 @@ public class BookingDAO {
 
         String sql =
                 "INSERT INTO appointments " +
-                "(user_id, doctor_id, service_id, appointment_date, status, note, created_at) " +
-                "VALUES (?, ?, ?, ?, 'Pending', ?, GETDATE())";
+                "(user_id, doctor_id, service_id, appointment_date, status, note, created_at, stage_name) " +
+                "VALUES (?, ?, ?, ?, 'Pending', ?, GETDATE(), ?)";
 
         try (
                 Connection conn = DBConnection.getConnection();
@@ -26,6 +26,7 @@ public class BookingDAO {
             ps.setInt(3, booking.getServiceId());
             ps.setTimestamp(4, booking.getAppointmentDate());
             ps.setString(5, booking.getNote());
+            ps.setString(6, booking.getstatusStage());
             
 
             return ps.executeUpdate() > 0;
@@ -44,7 +45,7 @@ public class BookingDAO {
                     "JOIN medical_records mr ON mr.treatment_route_id = tr.id " +
                     "WHERE mr.user_id = ? " +
                     "  AND mr.service_id = ? " + 
-                    "  AND ts.status IN ( N'Chưa thực hiện') " +
+                    "  AND ts.status IN ( N'Chưa thực hiện', N'Đang thực hiện' ) " +
                     "ORDER BY ts.sequence_order ASC";
                      
         try (Connection conn = DBConnection.getConnection();

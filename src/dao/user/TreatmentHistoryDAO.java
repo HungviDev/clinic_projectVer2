@@ -16,7 +16,8 @@ public class TreatmentHistoryDAO {
         String sql = "SELECT m.created_at, " +
                     "u.fullname AS doctor_name, " +
                     "m.diagnosis, " +
-                    "tr.title AS treatment_plan, " + // Lấy tên lộ trình từ bảng treatment_routes
+                    "tr.title AS treatment_plan, " +
+                    "m.treatment_route_id, " + // Lấy tên lộ trình từ bảng treatment_routes
                                                 
                     // DÙNG CASE WHEN ĐỂ XỬ LÝ LOGIC TRẠNG THÁI
                     "CASE " +
@@ -53,6 +54,7 @@ public class TreatmentHistoryDAO {
                 t.setDiagnosis(rs.getString("diagnosis"));
                 t.setTreatmentPlan(rs.getString("treatment_plan"));
                 t.setstatusStage(rs.getString("stage_name"));
+                t.setTreatmentRouteId(rs.getInt("treatment_route_id"));
                 list.add(t);
             }
         } catch (Exception e) { e.printStackTrace(); }

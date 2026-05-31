@@ -77,7 +77,7 @@ public class MyAppointmentsPanel extends JPanel {
         } else {
 
             DateTimeFormatter formatter =
-                    DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");           
 
             for (Appointment app : appointments) {
 

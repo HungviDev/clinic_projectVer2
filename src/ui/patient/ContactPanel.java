@@ -72,7 +72,7 @@ public class ContactPanel extends JPanel {
         card.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // Tên chi nhánh (Tông Pastel)
-        JLabel lblName = new JLabel("🏢 Chi nhánh: " + branchName);
+        JLabel lblName = new JLabel("Chi nhánh: " + branchName);
         lblName.setFont(new Font("Segoe UI", Font.BOLD, 17));
         lblName.setForeground(HOVER_COLOR_PASTEL); // Đổi màu nhấn mạnh tên chi nhánh
         lblName.setAlignmentX(Component.LEFT_ALIGNMENT);

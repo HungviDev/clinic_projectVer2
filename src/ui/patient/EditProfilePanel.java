@@ -5,13 +5,16 @@ import ui.auth.MainDashboard;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
-import controller.admin.UserController;
+import controller.user.UserController;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.sql.Date;
+import java.net.URL;
 
 public class EditProfilePanel extends JPanel {
 
@@ -23,9 +26,15 @@ public class EditProfilePanel extends JPanel {
 
     private JTextField txtFullName, txtPhone, txtBirthDate, txtAddress, txtemail;
     private int loggedInUserId;
+    private String avatarPath; 
+    
+    // BIẾN LƯU FILE ẢNH VỪA CHỌN
+    private File selectedAvatarFile = null; 
 
-    public EditProfilePanel(int userId, String currentFullName, String currentPhone, Date currentBirthDate, String currentAddress, String currentemail) {
+    public EditProfilePanel(int userId, String currentFullName, String currentPhone, Date currentBirthDate, String currentAddress, String currentemail, String currentAvatarPath) {
         this.loggedInUserId = userId;
+        this.avatarPath = currentAvatarPath; 
+        
         setLayout(new BorderLayout());
         setBackground(COLOR_BG);
 
@@ -42,7 +51,7 @@ public class EditProfilePanel extends JPanel {
         lblBack.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                switchPage("PROFILE"); // Trở về trang Profile
+                switchPage("PROFILE");
             }
         });
 
@@ -50,7 +59,7 @@ public class EditProfilePanel extends JPanel {
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblTitle.setForeground(TEXT_DARK);
 
-        // Nút Lưu (Góc phải)
+        // Nút Lưu
         JLabel lblSave = new JLabel("Lưu");
         lblSave.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblSave.setForeground(PRIMARY_COLOR);
@@ -77,26 +86,58 @@ public class EditProfilePanel extends JPanel {
         JPanel avatarContainer = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 30));
         avatarContainer.setBackground(Color.WHITE);
         
-        // Tạo khối avatar với nút camera giả lập
         JPanel avatarWrapper = new JPanel(new BorderLayout());
         avatarWrapper.setOpaque(false);
         
-        JLabel lblAvatar = new JLabel("👤", SwingConstants.CENTER);
-        lblAvatar.setFont(new Font("Segoe UI", Font.PLAIN, 50));
-        lblAvatar.setOpaque(true);
-        lblAvatar.setBackground(new Color(236, 240, 241)); // Xám nhạt
-        lblAvatar.setForeground(TEXT_MUTED);
+        JLabel lblAvatar = new JLabel();
         lblAvatar.setPreferredSize(new Dimension(100, 100));
+        lblAvatar.setHorizontalAlignment(SwingConstants.CENTER);
+        lblAvatar.setVerticalAlignment(SwingConstants.CENTER);
+        lblAvatar.setOpaque(true);
+        lblAvatar.setBackground(new Color(236, 240, 241)); 
         lblAvatar.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1, true)); 
+
+        // Load ảnh avatar hiện tại từ DB
+        ImageIcon avatarIcon = loadScaledImage(this.avatarPath, 100, 100);
+        if (avatarIcon != null) {
+            lblAvatar.setIcon(avatarIcon);
+        } else {
+            lblAvatar.setText("👤");
+            lblAvatar.setFont(new Font("Segoe UI", Font.PLAIN, 50));
+            lblAvatar.setForeground(TEXT_MUTED);
+        }
         
-        JLabel lblCamera = new JLabel("📷");
+        // Nút Camera
+        JLabel lblCamera = new JLabel("📷", SwingConstants.CENTER);
         lblCamera.setOpaque(true);
         lblCamera.setBackground(Color.WHITE);
         lblCamera.setBorder(new LineBorder(new Color(220, 220, 220), 1, true));
         lblCamera.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lblCamera.setToolTipText("Đổi ảnh đại diện");
         
+        // SỰ KIỆN CLICK CHỌN ẢNH TỪ MÁY TÍNH
+        lblCamera.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Chọn ảnh đại diện mới");
+                fileChooser.setFileFilter(new FileNameExtensionFilter("Images (JPG, PNG)", "jpg", "jpeg", "png"));
+                
+                int result = fileChooser.showOpenDialog(EditProfilePanel.this);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    selectedAvatarFile = fileChooser.getSelectedFile(); 
+                    
+                    // Hiển thị xem trước ảnh ngay lập tức
+                    ImageIcon previewIcon = new ImageIcon(selectedAvatarFile.getAbsolutePath());
+                    Image img = previewIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+                    lblAvatar.setIcon(new ImageIcon(img));
+                    lblAvatar.setText(""); // Ẩn icon 👤 đi
+                }
+            }
+        });
+        
         avatarWrapper.add(lblAvatar, BorderLayout.CENTER);
+        avatarWrapper.add(lblCamera, BorderLayout.SOUTH); // Gắn nút camera ở dưới ảnh
         avatarContainer.add(avatarWrapper);
         
         bodyPanel.add(avatarContainer);
@@ -107,7 +148,6 @@ public class EditProfilePanel extends JPanel {
         formPanel.setBackground(Color.WHITE);
         formPanel.setBorder(new EmptyBorder(0, 20, 20, 20));
 
-        // Tạo các trường nhập liệu với dữ liệu hiện tại
         txtFullName = new JTextField(currentFullName);
         txtPhone = new JTextField(currentPhone);
         txtBirthDate = new JTextField(currentBirthDate != null ? currentBirthDate.toString() : "");
@@ -121,8 +161,6 @@ public class EditProfilePanel extends JPanel {
         formPanel.add(createInputRow("Email", txtemail));
 
         bodyPanel.add(formPanel);
-        
-        // Khoảng trống đẩy nội dung lên trên
         bodyPanel.add(Box.createVerticalGlue());
 
         JScrollPane scrollPane = new JScrollPane(bodyPanel);
@@ -137,21 +175,19 @@ public class EditProfilePanel extends JPanel {
         row.setBackground(Color.WHITE);
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
         row.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(240, 240, 240)), // Gạch chân
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(240, 240, 240)), 
                 new EmptyBorder(15, 0, 15, 0)
         ));
 
-        // Nhãn bên trái
         JLabel lblLabel = new JLabel(labelText);
         lblLabel.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         lblLabel.setForeground(TEXT_MUTED);
         lblLabel.setPreferredSize(new Dimension(140, 30));
 
-        // Ô nhập bên phải
         textField.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         textField.setForeground(TEXT_DARK);
-        textField.setBorder(null); // Bỏ viền để nó hòa vào nền giống app mobile
-        textField.setHorizontalAlignment(JTextField.RIGHT); // Chữ đẩy sang phải
+        textField.setBorder(null); 
+        textField.setHorizontalAlignment(JTextField.RIGHT); 
         textField.setBackground(Color.WHITE);
 
         row.add(lblLabel, BorderLayout.WEST);
@@ -161,7 +197,6 @@ public class EditProfilePanel extends JPanel {
     }
 
     // ================= HÀM XỬ LÝ LƯU =================
-    // ================= HÀM XỬ LÝ LƯU (CHUẨN MVC) =================
     private void saveProfileInfo() {
         String newName = txtFullName.getText().trim();
         String newPhone = txtPhone.getText().trim();
@@ -175,37 +210,61 @@ public class EditProfilePanel extends JPanel {
         }
 
         try {
-            // Khởi tạo Controller và gọi hàm update
             UserController userController = new UserController();
-            boolean isSuccess = userController.updateProfile(loggedInUserId, newName, newPhone, newBirth, newAddress, newEmail);
+            
+            // LƯU Ý CHO BẠN:
+            // Hiện tại hàm updateProfile của bạn chỉ nhận 6 tham số.
+            // Nếu muốn lưu file ảnh thực tế, bạn cần sửa hàm updateProfile trong UserController 
+            // để nhận thêm biến selectedAvatarFile, rồi dùng Java Copy File vào thư mục resources nhé!
+            
+            boolean isSuccess = userController.updateProfile(loggedInUserId, newName, newPhone, newBirth, newAddress, newEmail, selectedAvatarFile);
             
             if (isSuccess) {
                 JOptionPane.showMessageDialog(this, "Cập nhật thông tin thành công!");
                 
-                // GỌI HÀM LÀM MỚI BÊN MAINDASHBOARD
                 Window window = SwingUtilities.getWindowAncestor(this);
                 if (window instanceof MainDashboard) {
-                    ((MainDashboard) window).reloadUserData(); // Cập nhật lại Header & Panel
-                    ((MainDashboard) window).showPage("PROFILE"); // Trượt về trang Profile mới
+                    ((MainDashboard) window).reloadUserData(); 
+                    ((MainDashboard) window).showPage("PROFILE"); 
                 } 
-                // switchPage("PROFILE"); // Trở về màn hình Profile
             } else {
                 JOptionPane.showMessageDialog(this, "Có lỗi xảy ra, không tìm thấy tài khoản!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
             
         } catch (IllegalArgumentException ex) {
-            // Bắt lỗi định dạng ngày tháng ném ra từ Controller
             JOptionPane.showMessageDialog(this, "Ngày sinh phải nhập đúng định dạng Năm-Tháng-Ngày.\nVí dụ: 2004-04-22", "Lỗi định dạng", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Lỗi hệ thống không xác định!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
+
     // ================= HÀM CHUYỂN TRANG =================
     private void switchPage(String pageName) {
         Window window = SwingUtilities.getWindowAncestor(this);
         if (window instanceof MainDashboard) {
             ((MainDashboard) window).showPage(pageName);
         }
+    }
+
+    // ================= HÀM XỬ LÝ ẢNH AVATAR =================
+    private ImageIcon loadScaledImage(String imageFileName, int width, int height) {
+        if (imageFileName == null || imageFileName.trim().isEmpty() || imageFileName.equalsIgnoreCase("NULL")) {
+            return null;
+        }
+        
+        String fullPath = "/resources/" + imageFileName; 
+        
+        try {
+            URL url = getClass().getResource(fullPath);
+            if (url != null) {
+                ImageIcon originalIcon = new ImageIcon(url);
+                Image img = originalIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+                return new ImageIcon(img);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi load avatar: " + fullPath);
+        }
+        return null; 
     }
 }
