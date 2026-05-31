@@ -4,14 +4,6 @@ import config.DBConnection;
 import controller.user.BookingController;
 import dao.user.DoctorDAO;
 import global.GlobalData;
-import model.user.Booking;
-import model.user.Doctor;
-import model.user.Service;
-import ui.auth.MainDashboard;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -25,16 +17,12 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-// import dao.user.BookingDAO;
-// import model.Booking;
-// import model.Doctor;
-// import model.Service;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-
+import model.user.Booking;
+import model.user.Doctor;
+import model.user.Service;
 import ui.auth.MainDashboard;
 
 public class BookingPanel extends JPanel {
@@ -84,7 +72,7 @@ public class BookingPanel extends JPanel {
         add(lblTitle, BorderLayout.NORTH);
 
         // --- Khu vực Form chính (Scrollable) ---
-        JPanel formPanel = new JPanel();
+JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
         formPanel.setBackground(Color.WHITE);
         formPanel.setBorder(new EmptyBorder(0, 20, 20, 20));
@@ -152,8 +140,7 @@ public class BookingPanel extends JPanel {
         cbDate.addActionListener(e -> updateTimeSlots()); // Khi đổi ngày thì tải lại khung giờ
         formPanel.add(cbDate);
         formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-
-        // 5. Khung giờ
+// 5. Khung giờ
         formPanel.add(createSectionLabel("Khung giờ"));
         timeSlotContainer = new JPanel(new GridLayout(0, 2, 10, 10)); // 2 cột
         timeSlotContainer.setBackground(Color.WHITE);
@@ -216,7 +203,7 @@ public class BookingPanel extends JPanel {
         if (nextTreatment != null && !nextTreatment.isEmpty()) {
             lblNextStageInfo.setText("<html>Lịch điều trị tiếp theo: <b style='color:#2ecc71'>" + nextTreatment + "</b></html>");
             nextStageContainer.setVisible(true);
-            nextStageContainer.setBorder(new EmptyBorder(0, 0, 15, 0));
+nextStageContainer.setBorder(new EmptyBorder(0, 0, 15, 0));
             
             // THÊM ĐOẠN NÀY: Cắt chuỗi để lấy đúng stage_name (Phía sau dấu " ➔ ")
             String[] parts = nextTreatment.split(" ➔ ");
@@ -314,8 +301,7 @@ public class BookingPanel extends JPanel {
                             txtNote.getText().trim(),
                             currentStageName
                     );
-
-            boolean success =
+boolean success =
                     controller.submitBooking(booking);
 
             if (success) {
@@ -413,7 +399,7 @@ public class BookingPanel extends JPanel {
             LocalDate date = today.plusDays(i);
             String display = date.format(displayFormatter);
             String value = date.toString(); // "yyyy-MM-dd" để dễ parse lưu DB
-            cbDate.addItem(new ComboItem(i, display, value));
+cbDate.addItem(new ComboItem(i, display, value));
         }
     }
 
@@ -488,7 +474,7 @@ public class BookingPanel extends JPanel {
     // Thẻ Bác Sĩ (Clickable)
     // ================= HÀM TẠO THẺ BÁC SĨ (Đã xóa Emoji gây lỗi) =================
     private JPanel createDoctorCard(int docId, String name) {
-        JPanel card = new JPanel();
+JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
@@ -550,8 +536,7 @@ public class BookingPanel extends JPanel {
                 new EmptyBorder(10, 10, 10, 10)
         ));
         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        JLabel lblTime = new JLabel(time + " - " + calculateEndTime(time), SwingConstants.CENTER);
+JLabel lblTime = new JLabel(time + " - " + calculateEndTime(time), SwingConstants.CENTER);
         lblTime.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblTime.setForeground(TEXT_DARK);
         lblTime.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -627,7 +612,7 @@ public class BookingPanel extends JPanel {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:3000/send-mail"))
-                    .header("Content-Type", "application/json")
+.header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 

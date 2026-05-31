@@ -1,41 +1,50 @@
-
 package ui.doctor.View;
 
 import java.awt.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import ui.doctor.Controller.MedicalRecordController;
 import ui.doctor.Model.MedicalRecordModel;
+import ui.doctor.Model.TreatmentStageModel;
 
 public class MedicalRecordDialog extends JDialog {
 
     private final MedicalRecordController controller;
     private final MedicalRecordModel record;
+    private final boolean isEditMode; // Cờ phân biệt Thêm mới hay Cập nhật
 
     private JTextField txtPatientName;
-
     private JTextField txtDisease;
     private JTextField txtStartDate;
-    private JTextField txtEndDate;
-    private JTextField txtDuration;
-    private JComboBox<String> cboStage;
-
+    private JComboBox<RouteItem> cboRoutes; 
     private boolean saved = false;
-    // Format hỗ trợ việc kiểm tra tính hợp lệ và tính toán số ngày
-    private final SimpleDateFormat displayFormat = new SimpleDateFormat("dd/MM/yyyy");
+    
+    // ======================================================================
+    // 🌟 THÀNH PHẦN MỚI: Các Component phục vụ hiển thị giai đoạn điều trị
+    // ======================================================================
+    private JPanel stagesPanel;            // Panel chứa danh sách các bước động
+    private JButton btnNextStage;          // Nút bấm "Chuyển giai đoạn"
+    private List<TreatmentStageModel> activeStages; // Lưu list bước đang hiển thị
 
     public MedicalRecordDialog(Window owner, MedicalRecordController controller, MedicalRecordModel record) {
         super(owner, record == null ? "Thêm hồ sơ bệnh án" : "Cập nhật hồ sơ bệnh án", ModalityType.APPLICATION_MODAL);
         this.controller = controller;
-        this.record = record;
-        displayFormat.setLenient(false); // Ngăn chặn ngày sai (VD: 32/01)
+        
+        // Nếu truyền vào null -> Tạo model rỗng phục vụ tính năng Thêm mới
+        this.isEditMode = (record != null);
+        this.record = isEditMode ? record : new MedicalRecordModel(0, "", "", "", 0, "", "");
 
         initUI();
-        loadData();
+        loadRouteList(); // Nạp danh sách lộ trình vào ComboBox trước
+        loadData();      // Đổ dữ liệu vào các ô nhập (Nếu là Edit)
+        
+        // Kích hoạt nạp danh sách các bước điều trị lần đầu tiên dựa trên lộ trình được chọn
+        triggerInitialStagesLoad();
 
-        setSize(650, 540);
+        // Tăng chiều cao Dialog từ 420 lên 580 để vừa vặn cho khu vực danh sách giai đoạn điều trị
+        setSize(520, 580); 
         setLocationRelativeTo(owner);
         setResizable(false);
     }
@@ -46,195 +55,260 @@ public class MedicalRecordDialog extends JDialog {
         root.setBorder(new EmptyBorder(20, 20, 20, 20));
         setContentPane(root);
 
-        JLabel lblTitle = new JLabel(record == null ? "THÊM HỒ SƠ BỆNH ÁN" : "CẬP NHẬT HỒ SƠ BỆNH ÁN");
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        JLabel lblTitle = new JLabel(!isEditMode ? "THÊM HỒ SƠ" : "CẬP NHẬT HỒ SƠ");
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitle.setForeground(new Color(0, 51, 102));
-        lblTitle.setBorder(new EmptyBorder(0, 0, 15, 0));
         root.add(lblTitle, BorderLayout.NORTH);
 
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(Color.WHITE);
-        formPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(225, 230, 235), 1, true),
-                new EmptyBorder(20, 20, 20, 20)
-        ));
+        formPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.insets = new Insets(8, 10, 8, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         int row = 0;
-
         txtPatientName = new JTextField();
         addField(formPanel, gbc, row++, "Họ tên bệnh nhân:", txtPatientName);
 
         txtDisease = new JTextField();
         addField(formPanel, gbc, row++, "Bệnh điều trị:", txtDisease);
 
-        // Ngày mặc định khi thêm mới là ngày hôm nay
-        String today = displayFormat.format(new java.util.Date());
-        txtStartDate = new JTextField(today);
+        txtStartDate = new JTextField(new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date()));
         addField(formPanel, gbc, row++, "Ngày bắt đầu (dd/mm/yyyy):", txtStartDate);
 
-        txtEndDate = new JTextField(today);
-        addField(formPanel, gbc, row++, "Ngày kết thúc (dd/mm/yyyy):", txtEndDate);
+        cboRoutes = new JComboBox<>();
+        addField(formPanel, gbc, row++, "Chọn lộ trình:", cboRoutes);
 
-        txtDuration = new JTextField("0");
-        txtDuration.setEditable(false);
-        txtDuration.setBackground(new Color(240, 242, 245));
-        addField(formPanel, gbc, row++, "Số ngày điều trị tự động:", txtDuration);
+        // ----------------------------------------------------------------------
+        // 🌟 THIẾT KẾ KHU VỰC HIỂN THỊ CÁC BƯỚC ĐIỀU TRỊ ĐỘNG
+        // ----------------------------------------------------------------------
+        gbc.gridx = 0; gbc.gridy = row++;
+        gbc.gridwidth = 2; // Chiếm toàn bộ 2 cột trái và phải
+        gbc.weightx = 1.0; 
+        gbc.weighty = 1.0; // 🌟 ĐÃ THÊM: Cho phép List giãn nở theo chiều dọc không bị bẹp
+        gbc.fill = GridBagConstraints.BOTH;
+        
+        stagesPanel = new JPanel();
+        stagesPanel.setLayout(new BoxLayout(stagesPanel, BoxLayout.Y_AXIS));
+        stagesPanel.setBackground(Color.WHITE);
+        
+        // Tạo viền có tiêu đề nổi bật cho danh sách
+        TitledBorder titledBorder = BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(220, 224, 230), 1), 
+                " Các bước điều trị chưa hoàn thành ", 
+                TitledBorder.LEFT, TitledBorder.TOP, 
+                new Font("Segoe UI", Font.BOLD, 12), new Color(0, 51, 102)
+        );
+        stagesPanel.setBorder(titledBorder);
+        
+        // Bọc danh sách vào một JScrollPane nhỏ để tránh tràn giao diện khi có nhiều bước
+        JScrollPane scrollStages = new JScrollPane(stagesPanel);
+        scrollStages.setPreferredSize(new Dimension(440, 150));
+        scrollStages.setMinimumSize(new Dimension(440, 150)); // 🌟 ĐÃ THÊM: Chốt cứng size tối thiểu
+        scrollStages.setBorder(null);
+        formPanel.add(scrollStages, gbc);
 
-        cboStage = new JComboBox<>();
-        addField(formPanel, gbc, row++, "Lộ trình điều trị:", cboStage);
-
-        // Sự kiện tự động tính toán số ngày & load Combobox khi trỏ chuột ra ngoài
-        java.awt.event.FocusAdapter updateListener = new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusLost(java.awt.event.FocusEvent e) {
-                calculateDuration();
-                refreshStageCombo();
+        // Sự kiện thay đổi lựa chọn trên ComboBox Lộ trình -> Load lại danh sách bước tương ứng
+        cboRoutes.addActionListener(e -> {
+            RouteItem selected = (RouteItem) cboRoutes.getSelectedItem();
+            if (selected != null) {
+                refreshStagesList(selected.getId());
             }
-        };
-        txtStartDate.addFocusListener(updateListener);
-        txtEndDate.addFocusListener(updateListener);
-        txtDisease.addFocusListener(updateListener);
+        });
 
         root.add(formPanel, BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        buttonPanel.setBackground(new Color(245, 248, 252));
-        JButton btnSave = createButton("Lưu Dữ Liệu", new Color(46, 204, 113));
-        JButton btnCancel = createButton("Hủy bỏ", new Color(149, 165, 166));
-        buttonPanel.add(btnCancel);
-        buttonPanel.add(btnSave);
-        root.add(buttonPanel, BorderLayout.SOUTH);
+        // Khởi tạo các nút bấm ở thanh điều khiển phía dưới thanh Dialog
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        buttonPanel.setOpaque(false);
 
-        btnCancel.addActionListener(e -> dispose());
+        // Nút chuyển giai đoạn (Chỉ khả dụng và hiển thị logic khi có dữ liệu)
+        btnNextStage = new JButton("Chuyển giai đoạn");
+        btnNextStage.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnNextStage.setBackground(new Color(230, 126, 34)); // Màu cam đặc trưng tiến trình
+        btnNextStage.setForeground(Color.WHITE);
+        btnNextStage.setFocusPainted(false);
+        btnNextStage.addActionListener(e -> advanceCurrentStage());
+        buttonPanel.add(btnNextStage);
+
+        JButton btnSave = new JButton("Lưu lại");
+        btnSave.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnSave.setBackground(new Color(46, 204, 113)); // Màu xanh lá lưu dữ liệu
+        btnSave.setForeground(Color.WHITE);
+        btnSave.setFocusPainted(false);
         btnSave.addActionListener(e -> saveRecord());
+        buttonPanel.add(btnSave);
+        
+        root.add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    private void addField(JPanel panel, GridBagConstraints gbc, int row, String labelText, JComponent component) {
-        JLabel label = new JLabel(labelText);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        component.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        component.setPreferredSize(new Dimension(300, 36));
-
-        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0.3;
-        panel.add(label, gbc);
-        gbc.gridx = 1; gbc.weightx = 0.7;
-        panel.add(component, gbc);
-    }
-
-    private JButton createButton(String text, Color color) {
-        JButton btn = new JButton(text);
-        btn.setFocusPainted(false);
-        btn.setBackground(color);
-        btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setBorder(new EmptyBorder(10, 22, 10, 22));
-        return btn;
-    }
-
-    private void calculateDuration() {
-        try {
-            java.util.Date start = displayFormat.parse(txtStartDate.getText().trim());
-            java.util.Date end = displayFormat.parse(txtEndDate.getText().trim());
-            long diff = end.getTime() - start.getTime();
-            long days = diff / (1000 * 60 * 60 * 24);
-            txtDuration.setText(days >= 0 ? String.valueOf(days) : "0");
-        } catch (ParseException e) {
-            txtDuration.setText("0");
+    private void loadRouteList() {
+        cboRoutes.removeAllItems();
+        List<RouteItem> routes = controller.getRouteList(); 
+        for (RouteItem r : routes) {
+            cboRoutes.addItem(r);
         }
     }
 
     private void loadData() {
-        if (record == null) return;
-
-        txtPatientName.setText(record.getPatientName());
-        txtDisease.setText(record.getDisease());
-        
-        // ĐÃ SỬA: Vì Model trả về String nên không dùng displayFormat.format() nữa
-        txtStartDate.setText(record.getStartDate());
-        txtEndDate.setText(record.getEndDate());
-        
-        txtDuration.setText(String.valueOf(record.getTreatmentDurationDays()));
-        
-        refreshStageCombo();
-        cboStage.setSelectedItem(record.getCurrentStage());
+        if (isEditMode) {
+            txtPatientName.setText(record.getPatientName());
+            txtPatientName.setEditable(false); // Đã là bệnh án cũ thì không nên sửa tên bệnh nhân
+            txtDisease.setText(record.getDisease());
+            txtStartDate.setText(record.getStartDate());
+            
+            // Tự động chọn đúng Lộ trình hiện tại trong ComboBox bằng ID
+            for (int i = 0; i < cboRoutes.getItemCount(); i++) {
+                RouteItem item = cboRoutes.getItemAt(i);
+                if (item.getId() == record.getTreatmentRouteId()) {
+                    cboRoutes.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
     }
 
-    private void refreshStageCombo() {
-
-    // Xóa dữ liệu cũ
-    cboStage.removeAllItems();
-
-    java.util.List<String> stages = controller.getTitleRoadMap();
-
-    // Add dữ liệu vào combobox
-    for (String stage : stages) {
-        cboStage.addItem(stage);
+    private void triggerInitialStagesLoad() {
+        RouteItem selected = (RouteItem) cboRoutes.getSelectedItem();
+        if (selected != null) {
+            refreshStagesList(selected.getId());
+        }
     }
 
-    // if (stages.isEmpty()) {
-    //     cboStage.addItem("Giai đoạn khởi phát");
-    //     cboStage.addItem("Giai đoạn toàn phát");
-    //     cboStage.addItem("Giai đoạn lui bệnh");
-    // }
-}
+    private void addField(JPanel panel, GridBagConstraints gbc, int row, String label, JComponent comp) {
+        gbc.gridwidth = 1; gbc.weightx = 0.0;
+        gbc.gridx = 0; gbc.gridy = row;
+        panel.add(new JLabel(label), gbc);
+        gbc.gridx = 1; gbc.weightx = 1.0;
+        comp.setPreferredSize(new Dimension(250, 30));
+        panel.add(comp, gbc);
+    }
+
+    // ======================================================================
+    // 🌟 HÀM MỚI: Tải và vẽ giao diện động danh sách các bước
+    // ======================================================================
+    private void refreshStagesList(int routeId) {
+        stagesPanel.removeAll(); // Xóa sạch giao diện các bước cũ
+        
+        // Gọi Controller lấy danh sách bước chưa "Hoàn thành" từ cơ sở dữ liệu
+        activeStages = controller.getActiveStagesByRoute(routeId);
+        
+        if (activeStages == null || activeStages.isEmpty()) {
+            JLabel lblDone = new JLabel("Toàn bộ lộ trình điều trị này đã hoàn thành!");
+            lblDone.setFont(new Font("Segoe UI", Font.ITALIC, 13));
+            lblDone.setForeground(new Color(39, 174, 96));
+            lblDone.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            stagesPanel.add(lblDone);
+            
+            btnNextStage.setEnabled(false); // Hết giai đoạn thì tắt nút chuyển đi sếp
+        } else {
+            btnNextStage.setEnabled(true);
+            
+            for (TreatmentStageModel stage : activeStages) {
+                // Tạo câu chuỗi định dạng: Tên bước | Trạng thái
+                String text = String.format("• %s   [%s]", stage.getStageName(), stage.getStatus());
+                if (stage.getNote() != null && !stage.getNote().isEmpty()) {
+                    text += " - Ghi chú: " + stage.getNote();
+                }
+                
+                JLabel lblStage = new JLabel(text);
+                lblStage.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+                lblStage.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+                
+                // Trực quan hóa: Đánh dấu màu xanh đậm cho giai đoạn "Đang thực hiện" hiện tại
+                if ("Đang thực hiện".equals(stage.getStatus())) {
+                    lblStage.setForeground(new Color(41, 128, 185));
+                    lblStage.setFont(new Font("Segoe UI", Font.BOLD, 13));
+                } else {
+                    lblStage.setForeground(Color.GRAY); // Chưa thực hiện thì để màu xám mờ
+                }
+                stagesPanel.add(lblStage);
+            }
+        }
+        
+        // Yêu cầu Swing cập nhật vẽ lại giao diện mới tức thì
+        stagesPanel.revalidate();
+        stagesPanel.repaint();
+    }
+
+    // ======================================================================
+    // 🌟 HÀM MỚI: Thực thi logic sự kiện bấm nút "Chuyển giai đoạn"
+    // ======================================================================
+    private void advanceCurrentStage() {
+        if (activeStages == null || activeStages.isEmpty()) return;
+
+        // Giai đoạn đầu tiên trong mảng chưa hoàn thành luôn là giai đoạn đang được xử lý
+        TreatmentStageModel currentStage = activeStages.get(0);
+        RouteItem selectedRoute = (RouteItem) cboRoutes.getSelectedItem();
+
+        if (selectedRoute == null) return;
+
+        int confirm = JOptionPane.showConfirmDialog(
+            this, 
+            "Xác nhận hoàn thành giai đoạn [" + currentStage.getStageName() + "] và chuyển sang bước tiếp theo?",
+            "Xác nhận chuyển đổi tiến trình", 
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            // Gọi lệnh tiến trình từ Controller xử lý cập nhật trạng thái kép dưới CSDL
+            boolean isAdvanced = controller.advanceStage(currentStage.getId(), selectedRoute.getId());
+            if (isAdvanced) {
+                JOptionPane.showMessageDialog(this, "Hệ thống đã tự động nhảy sang giai đoạn tiếp theo!");
+                refreshStagesList(selectedRoute.getId());
+                this.saved = true; // Đánh dấu là có thay đổi dữ liệu
+                MedicalRecordView.refreshData(); // Cập nhật lại giao diện, ẩn ngay bước cũ đi
+            } else {
+                JOptionPane.showMessageDialog(this, "Chuyển giai đoạn thất bại! Sếp vui lòng kiểm tra lại DB.", "Lỗi hệ thống", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
 
     private void saveRecord() {
-        String txtStart = txtStartDate.getText().trim();
-        String txtEnd = txtEndDate.getText().trim();
-        String durationStr = txtDuration.getText().trim();
-        String name = txtPatientName.getText().trim();
+        String patientName = txtPatientName.getText().trim();
         String disease = txtDisease.getText().trim();
+        String startDate = txtStartDate.getText().trim();
+        RouteItem selected = (RouteItem) cboRoutes.getSelectedItem();
 
-        // Kiểm tra rỗng đầu vào cơ bản
-        if (name.isEmpty() || disease.isEmpty() || txtStart.isEmpty() || txtEnd.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin bắt buộc!");
+        if (patientName.isEmpty() || disease.isEmpty() || selected == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        try {
-            // Kiểm tra định dạng ngày hợp lệ trước khi đóng gói gửi đi
-            displayFormat.parse(txtStart);
-            displayFormat.parse(txtEnd);
+        // Đổ dữ liệu vào Model
+        record.setPatientName(patientName);
+        record.setDisease(disease);
+        record.setStartDate(startDate);
+        record.setTreatmentRouteId(selected.getId());
 
-            int duration = Integer.parseInt(durationStr);
-            String currentStage = (String) cboStage.getSelectedItem();
+        boolean success;
+        if (isEditMode) {
+            success = controller.updateRecord(record, selected.getId());
+        } else {
+            success = controller.addRecord(record, selected.getId());
+        }
 
-            // Khởi tạo Model đồng nhất với Constructor mới của bạn
-            MedicalRecordModel data = new MedicalRecordModel(
-                record == null ? 0 : record.getId(),
-                name,
-                disease,
-                txtStart,        // Chuỗi String chuẩn dd/MM/yyyy
-                txtEnd,          // Chuỗi String chuẩn dd/MM/yyyy
-                duration,
-                currentStage != null ? currentStage : "Giai đoạn khởi phát",
-                "/images/default.png"
-            );
-
-            // Nếu tạo mới thì nạp ID tự động tăng từ Database
-            if (record == null) {
-                data.setId(controller.getNextId());
-            }
-
-            // Thực thi lưu xuống Database
-            boolean isSuccess = (record == null) ? controller.addRecord(data) : controller.updateRecord(data);
-
-            if (isSuccess) {
-                saved = true;
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Lỗi thao tác ghi dữ liệu trên Cơ sở dữ liệu thất bại!");
-            }
-
-        } catch (ParseException ex) {
-            JOptionPane.showMessageDialog(this, "Sai định dạng ngày tháng! Vui lòng nhập theo dạng: dd/mm/yyyy.");
+        if (success) {
+            saved = true;
+            JOptionPane.showMessageDialog(this, "Đã lưu thông tin hồ sơ bệnh án thành công!");
+            dispose();
+        } else {
+            JOptionPane.showMessageDialog(this, "Lưu thất bại! Xin vui lòng kiểm tra lại kết nối Database.", "Lỗi kết nối", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    public boolean isSaved() { return saved; }
+    public boolean isSaved() {
+        return saved;
+    }
+
+    public static class RouteItem {
+        private final int id;
+        private final String name;
+        public RouteItem(int id, String name) { this.id = id; this.name = name; }
+        public int getId() { return id; }
+        @Override public String toString() { return name; }
+    }
 }
