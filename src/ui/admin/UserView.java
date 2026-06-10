@@ -148,7 +148,6 @@ public class UserView extends JPanel {
                         int id = Integer.parseInt(
                                 table.getValueAt(row, 0).toString()
                         );
-                        System.out.println(id+"id vừa click dc");
                         JFrame parentFrame =
                         (JFrame) SwingUtilities
                                         .getWindowAncestor(this);
@@ -157,7 +156,6 @@ public class UserView extends JPanel {
                         
                         TreatmentDetail treatmentDetail =
                                 controller.getDetail(id);
-                        System.out.println(treatmentDetail.getPatientName());
                         DetailForm form =
                                 new DetailForm(parentFrame,treatmentDetail);
                         form.setVisible(true);
@@ -364,7 +362,6 @@ public class UserView extends JPanel {
                         user.getEmail()
                 });
 
-                System.out.println(user);
             });
 
         } catch (Exception e) {

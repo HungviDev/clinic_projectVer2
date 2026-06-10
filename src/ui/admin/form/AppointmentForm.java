@@ -1,9 +1,9 @@
 package ui.admin.form;
 
+import controller.admin.AppointmentController;
 import controller.admin.DoctorController;
 import controller.admin.ServiceController;
 import controller.admin.UserController;
-import ui.doctor.Controller.AppointmentController;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -11,6 +11,10 @@ import javax.swing.border.EmptyBorder;
 import com.toedter.calendar.JDateChooser;
 
 import java.awt.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 public class AppointmentForm extends JDialog {
 
@@ -33,7 +37,9 @@ public class AppointmentForm extends JDialog {
     private int idPatient = 0;
     private int idDoctor = 0;
     private int idService = 0;
-
+    private String appointmentDate = "";
+    private String patientName = "";
+    private String doctorName = "";
     public AppointmentForm(JFrame parent) {
 
         super(parent, "TẠO LỊCH HẸN", true);
@@ -110,9 +116,8 @@ public class AppointmentForm extends JDialog {
         cboDoctor.setPreferredSize(new Dimension(450, 45));
 
         getAllDoctor();
-        eventDoctor();
         content.add(cboDoctor, gbc);
-
+        eventDoctor();
         // =====================================================
         // SERVICE
         // =====================================================
@@ -198,13 +203,26 @@ public class AppointmentForm extends JDialog {
         btnClose.addActionListener(e -> dispose());
 
         btnSave.addActionListener(e -> {
-            // Lấy ngày đã chọn từ JDateChooser (trả về kiểu java.util.Date)
-            // java.util.Date selectedDate = dateChooserAppointment.getDate();
-            
-            // int id = 1;
-            // appointmentController.insertAppointment();
-            
-            // JOptionPane.showMessageDialog(this, "Tạo lịch hẹn thành công");
+             java.util.Date date = dateChooserAppointment.getDate();
+             appointmentDate = date.toString();
+             System.out.println(idPatient+" "+idDoctor+" "+idService+" "+date+" "+txtDescription.getText());
+            boolean result =
+            appointmentController.insertAppointment(
+                    idPatient,
+                    idDoctor,
+                    idService,
+                    date,
+                    txtDescription.getText()
+            );
+
+            if (result) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Tạo lịch hẹn thành công"
+                );
+                sendMail(txtEmail.getText().toString(), doctorName, patientName, appointmentDate);
+                dispose();
+            }
         });
     }
 
@@ -261,9 +279,9 @@ public class AppointmentForm extends JDialog {
     public void eventPatient() {
         cboPatient.addActionListener(e -> {
             if (cboPatient.getSelectedItem() == null) return;
-            String patient = (String) cboPatient.getSelectedItem();
-            txtEmail.setText(userController.getPatientEmailByFullName(patient));
-            idPatient = userController.getPatientIdByFullName(patient);
+            patientName = (String) cboPatient.getSelectedItem();
+            txtEmail.setText(userController.getPatientEmailByFullName(patientName));
+            idPatient = userController.getPatientIdByFullName(patientName);
         });
     }
 
@@ -282,12 +300,18 @@ public class AppointmentForm extends JDialog {
     // EVENT DOCTOR
     // =====================================================
     public void eventDoctor() {
-        cboDoctor.addActionListener(e -> {
-            if (cboDoctor.getSelectedItem() == null) return;
-            String doctor = (String) cboDoctor.getSelectedItem();
-            idDoctor = doctorController.getDoctorIdByFullName(doctor);
-        });
-    }
+    cboDoctor.addActionListener(e -> {
+        if (cboDoctor.getSelectedItem() == null) return;
+
+        doctorName = (String) cboDoctor.getSelectedItem();
+
+        System.out.println("Tên bác sĩ: [" + doctorName + "]");
+
+        idDoctor = doctorController.getDoctorIdByFullName(doctorName);
+
+        System.out.println("ID bác sĩ: " + idDoctor);
+    });
+}
 
     // =====================================================
     // LOAD SERVICE
@@ -309,5 +333,38 @@ public class AppointmentForm extends JDialog {
             String service = (String) cboService.getSelectedItem();
             idService = serviceController.getServiceIdByName(service);
         });
+    }
+    public void sendMail(String to,
+                                String doctorName,
+                                String patientName,
+                                String appointmentDate) {
+
+        try {
+
+            String json = """
+            {
+                "to": "%s",
+                "doctorName": "%s",
+                "patientName": "%s",
+                "appointmentDate": "%s"
+            }
+            """.formatted(to, doctorName, patientName, appointmentDate);
+
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:3000/send-mail"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+
+            HttpResponse<String> response = client.send(
+                    request,
+                    HttpResponse.BodyHandlers.ofString()
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

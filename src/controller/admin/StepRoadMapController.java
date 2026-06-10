@@ -95,61 +95,55 @@ public class StepRoadMapController {
         return stepList;
     }
     public boolean insertStepByRouteId(StepRoadMapModel step) {
+        try {
+            Connection conn = config.DBConnection.getConnection();
 
-    try {
+            // Viết gộp logic tìm ngày cũ và INSERT ngày mới vào cùng 1 chuỗi SQL
+            String sql = 
+                "DECLARE @LastDate DATETIME; " +
+                
+                "-- 1. Tìm ngày hẹn của bước gần nhất trong cùng 1 lộ trình \n" +
+                "SELECT TOP 1 @LastDate = appointment_date " +
+                "FROM treatment_stages " +
+                "WHERE treatment_route_id = ? " +
+                "ORDER BY sequence_order DESC; " +
+                
+                "-- 2. Nếu là bước đầu tiên, lấy mốc là ngày hôm nay \n" +
+                "IF @LastDate IS NULL SET @LastDate = GETDATE(); " +
+                
+                "-- 3. Thực hiện INSERT, dùng DATEADD để cộng số ngày delay vào mốc @LastDate \n" +
+                "INSERT INTO treatment_stages (" +
+                    "treatment_route_id, stage_name, sequence_order, status, " +
+                    "note, created_at, updated_at, cost, delay, appointment_date" +
+                ") VALUES (?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?, ?, DATEADD(day, ?, @LastDate));";
 
-        Connection conn =
-                config.DBConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
 
-        String sql =
-        "INSERT INTO treatment_stages (" +
-                "treatment_route_id, " +
-                "stage_name, " +
-                "sequence_order, " +
-                "status, " +
-                "note, " +
-                "created_at, " +
-                "updated_at, " +
-                "cost, " +
-                "delay" +
-                ") VALUES (?, ?, ?, ?, ?, GETDATE(), GETDATE(), ?, ?)";
+            // =====================================
+            // Truyền tham số cho câu lệnh SQL
+            // =====================================
+            
+            // Tham số 1: Dành cho phần SELECT tìm @LastDate
+            ps.setInt(1, step.getTreatmentRouteId());
 
-        PreparedStatement ps =
-                conn.prepareStatement(sql);
+            // Tham số 2-8: Dành cho phần VALUES của lệnh INSERT
+            ps.setInt(2, step.getTreatmentRouteId());
+            ps.setString(3, step.getStageName());
+            ps.setInt(4, step.getSequenceOrder());
+            ps.setString(5, step.getStatus());
+            ps.setString(6, step.getNote());
+            ps.setDouble(7, step.getCost());
+            ps.setInt(8, step.getDelay());
 
-        ps.setInt(
-                1,
-                step.getTreatmentRouteId()
-        );
+            // Tham số 9: Dành cho hàm DATEADD(day, ?, @LastDate)
+            ps.setInt(9, step.getDelay());
 
-        ps.setString(
-                2,
-                step.getStageName()
-        );
+            return ps.executeUpdate() > 0;
 
-        ps.setInt(
-                3,
-                step.getSequenceOrder()
-        );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        ps.setString(
-                4,
-                step.getStatus()
-        );
-
-        ps.setString(5, step.getNote());
-
-        ps.setDouble(6, step.getCost());
-
-        ps.setInt(7, step.getDelay());
-
-        return ps.executeUpdate() > 0;
-
-    } catch (Exception e) {
-
-        e.printStackTrace();
+        return false;
     }
-
-    return false;
-}
 }

@@ -61,8 +61,6 @@ public class ServiceController {
                 );
 
                 serviceList.add(service);
-
-                System.out.println(service);
             }
 
             rs.close();

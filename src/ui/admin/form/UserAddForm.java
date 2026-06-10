@@ -181,14 +181,6 @@ private void insertUser() {
         // =====================================
         // LOG INPUT
         // =====================================
-        System.out.println("========== INPUT ==========");
-        System.out.println("Full Name: " + fullName);
-        System.out.println("Phone: " + phone);
-        System.out.println("Password: " + password);
-        System.out.println("Birth: " + birth);
-        System.out.println("Address: " + address);
-        System.out.println("Avatar: " + avatar);
-        System.out.println("Email: " + email);
 
         // =====================================
         // VALIDATE
@@ -240,17 +232,6 @@ private void insertUser() {
 
         user.setEmail(email);
 
-        // =====================================
-        // LOG MODEL
-        // =====================================
-        System.out.println("========== USER MODEL ==========");
-        System.out.println("Name: " + user.getFullName());
-        System.out.println("Phone: " + user.getPhone());
-        System.out.println("Password: " + user.getPassword());
-        System.out.println("BirthDate: " + user.getBirthDate());
-        System.out.println("Address: " + user.getAddress());
-        System.out.println("Avatar: " + user.getAvatar());
-        System.out.println("Email: " + user.getEmail());
 
         // =====================================
         // INSERT DATABASE

@@ -258,7 +258,16 @@ public class AppointmentView extends JPanel {
                     appointmentController.getAllAppointment();
 
             appointmentList.forEach(appointment -> {
-
+                String status = appointment.getStatus();
+                if ("pending".equalsIgnoreCase(status)) {
+                        status = "Chờ duyệt";
+                } else if ("approved".equalsIgnoreCase(status)) {
+                        status = "Đã duyệt";
+                } else if ("reject".equalsIgnoreCase(status)) {
+                        status = "Từ chối";
+                } else if ("completed".equalsIgnoreCase(status)) {
+                        status = "Hoàn thành";
+                }
                 model.addRow(new Object[]{
 
                         appointment.getId(),
@@ -269,7 +278,7 @@ public class AppointmentView extends JPanel {
 
                         appointment.getAppointmentDate(),
 
-                        appointment.getStatus()
+                        status
                 });
             });
 

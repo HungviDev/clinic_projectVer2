@@ -75,7 +75,6 @@ public class DoctorController {
 
             userList.add(doctor);
 
-            System.out.println(doctor.getFullName());
         }
 
             rs.close();
@@ -129,43 +128,43 @@ public class DoctorController {
 }
         public int getDoctorIdByFullName(String fullName) {
 
-    int id = -1;
+        int id = -1;
 
-    try {
+        try {
 
-        Connection conn = DBConnection.getConnection();
+                Connection conn = DBConnection.getConnection();
 
-        String sql = """
-                SELECT doctors.id
-                FROM doctors, users
-                WHERE users.id = user_id
-                AND users.role_id = 2
-                AND users.fullname = ?
-                """;
+                String sql = """
+                        SELECT doctors.id
+                        FROM doctors, users
+                        WHERE users.id = user_id
+                        AND users.role_id = 2
+                        AND users.fullname = ?
+                        """;
 
-        PreparedStatement ps =
-                conn.prepareStatement(sql);
+                PreparedStatement ps =
+                        conn.prepareStatement(sql);
 
-        ps.setString(1, fullName);
+                ps.setString(1, fullName);
 
-        ResultSet rs = ps.executeQuery();
+                ResultSet rs = ps.executeQuery();
 
-        if (rs.next()) {
+                if (rs.next()) {
 
-            id = rs.getInt("id");
+                id = rs.getInt("id");
+                }
+
+                rs.close();
+                ps.close();
+                conn.close();
+
+        } catch (Exception e) {
+
+                e.printStackTrace();
         }
 
-        rs.close();
-        ps.close();
-        conn.close();
-
-    } catch (Exception e) {
-
-        e.printStackTrace();
-    }
-
-    return id;
-}
+        return id;
+        }
     public static void main(String[] args) {
         List<DoctorModel> userList = new DoctorController().getAllDoctor();
         System.out.println(userList.size()+"hiển thị danh sách bác sĩ");

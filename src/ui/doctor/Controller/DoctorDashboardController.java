@@ -18,11 +18,12 @@ public class DoctorDashboardController {
         DoctorDashboardModel model = new DoctorDashboardModel();
         
         // 1. Chỉ đếm những lịch hẹn HÔM NAY và ĐÃ DUYỆT (approved) của bác sĩ này
-        String sqlAppointmentsToday = 
-                "SELECT COUNT(*) FROM appointments a " +
-                "JOIN doctors d ON a.doctor_id = d.id " +
-                "WHERE d.user_id = ? AND a.status = 'approved' AND CAST(a.appointment_date AS DATE) = CAST(GETDATE() AS DATE)";
-                
+     String sqlAppointmentsToday =
+    "SELECT COUNT(*) " +
+    "FROM appointments a " +
+    "JOIN doctors d ON a.doctor_id = d.id " +
+    "WHERE d.user_id = ? " +
+    "AND CAST(a.appointment_date AS DATE) = CAST(GETDATE() AS DATE)";
         // 2. Số bệnh nhân bác sĩ này đang điều trị (Dựa trên bệnh án do bác sĩ phụ trách)
         String sqlPatientsTreating = 
                 "SELECT COUNT(DISTINCT r.user_id) FROM medical_records r " +
@@ -60,7 +61,7 @@ public class DoctorDashboardController {
                 ps.setInt(1, doctorUserId);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) model.setTotalPatientsTreating(rs.getInt(1));
-                }
+}
             }
             
             // 3. Ca hoàn thành trong tháng
@@ -90,18 +91,19 @@ public class DoctorDashboardController {
     // =====================================================
     public List<AppointmentModel> getTodayAppointments(int doctorUserId) {
         List<AppointmentModel> list = new ArrayList<>();
-        String sql = "SELECT a.id, " +
-                     "FORMAT(a.appointment_date, 'HH:mm') AS time, " +
-                     "u.fullname AS patient_name, " +
-                     "s.name AS service_name, " +
-                     "a.status " +
-                     "FROM appointments a " +
-                     "JOIN users u ON a.user_id = u.id " +
-                     "JOIN services s ON a.service_id = s.id " +
-                     "JOIN doctors d ON a.doctor_id = d.id " +
-                     "WHERE d.user_id = ? AND a.status = 'approved' " +
-                     "AND CAST(a.appointment_date AS DATE) = CAST(GETDATE() AS DATE) " +
-                     "ORDER BY a.appointment_date ASC";
+       String sql =
+    "SELECT a.id, " +
+    "FORMAT(a.appointment_date, 'HH:mm') AS time, " +
+    "u.fullname AS patient_name, " +
+    "s.name AS service_name, " +
+    "a.status " +
+    "FROM appointments a " +
+    "JOIN users u ON a.user_id = u.id " +
+    "JOIN services s ON a.service_id = s.id " +
+    "JOIN doctors d ON a.doctor_id = d.id " +
+    "WHERE d.user_id = ? " +
+    "AND CAST(a.appointment_date AS DATE) = CAST(GETDATE() AS DATE) " +
+    "ORDER BY a.appointment_date ASC";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

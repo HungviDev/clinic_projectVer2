@@ -636,9 +636,6 @@ public class BookingPanel extends JPanel {
                     HttpResponse.BodyHandlers.ofString()
             );
 
-            System.out.println("Send mail status: " + response.statusCode());
-            System.out.println("Response: " + response.body());
-
         } catch (Exception e) {
             e.printStackTrace();
         }
