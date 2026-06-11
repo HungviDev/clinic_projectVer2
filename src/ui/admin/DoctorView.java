@@ -110,6 +110,30 @@ public class DoctorView extends JPanel {
         buttonPanel.add(btnDelete);
 
         // =====================================
+        // ADD EVENT
+        // =====================================
+        btnAdd.addActionListener(e -> {
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            ui.admin.form.DoctorAddForm form = new ui.admin.form.DoctorAddForm(parentFrame, this);
+            form.setVisible(true);
+        });
+
+        // =====================================
+        // UPDATE EVENT
+        // =====================================
+        btnUpdate.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn bác sĩ");
+                return;
+            }
+            int id = Integer.parseInt(table.getModel().getValueAt(row, 0).toString());
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            ui.admin.form.DoctorEditForm form = new ui.admin.form.DoctorEditForm(parentFrame, this, id);
+            form.setVisible(true);
+        });
+
+        // =====================================
         // DELETE EVENT
         // =====================================
         btnDelete.addActionListener(e -> {
@@ -139,6 +163,16 @@ public class DoctorView extends JPanel {
                             "Xác nhận",
                             JOptionPane.YES_NO_OPTION
                     );
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                boolean result = doctorController.deleteDoctor(id);
+                if (result) {
+                    JOptionPane.showMessageDialog(this, "Xóa bác sĩ thành công");
+                    loadAllDoctor();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Xóa bác sĩ thất bại");
+                }
+            }
         });
 
         topPanel.add(buttonPanel, BorderLayout.EAST);
@@ -147,25 +181,14 @@ public class DoctorView extends JPanel {
         // TABLE
         // =====================================
         String[] columns = {
-
                 "ID",
-
                 "Họ và tên",
-
                 "Số điện thoại",
-
                 "Mật khẩu",
-
                 "Ngày sinh",
-
                 "Địa chỉ",
-
-                "Avatar",
-
                 "Email",
-
                 "Chuyên ngành",
-
                 "Năm kinh nghiệm"
         };
 
@@ -278,25 +301,14 @@ public class DoctorView extends JPanel {
             doctorList.forEach(user -> {
 
                 model.addRow(new Object[]{
-
                         user.getId(),
-
                         user.getFullName(),
-
                         user.getPhone(),
-
                         user.getPassword(),
-
                         user.getBirthDate(),
-
                         user.getAddress(),
-
-                        user.getAvatar(),
-
                         user.getEmail(),
-
                         user.getSpecialization(),
-
                         user.getExperience()
                 });
 

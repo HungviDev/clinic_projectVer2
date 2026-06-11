@@ -156,7 +156,6 @@ public class MainDashboard extends JFrame {
             JButton btnServices = createMenuButton("Quản lý dịch vụ");
             JButton btnAppoinment = createMenuButton("Quản lý lịch hẹn");
             JButton btnOrders = createMenuButton("Quản lý đơn hàng");
-            JButton btnStatistics = createMenuButton("Thống kê");
             JButton btnItinary = createMenuButton("Quản lý lộ trình điều trị");
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnUsers);
@@ -167,7 +166,6 @@ public class MainDashboard extends JFrame {
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnOrders);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
-            sidebar.add(btnStatistics);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnAppoinment);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -176,7 +174,6 @@ public class MainDashboard extends JFrame {
             btnDoctors.addActionListener(e -> cardLayout.show(contentPanel, "DOCTORS"));
             btnServices.addActionListener(e -> cardLayout.show(contentPanel, "SERVICES_ADMIN"));
             btnOrders.addActionListener(e -> cardLayout.show(contentPanel, "ORDERS"));
-            btnStatistics.addActionListener(e -> cardLayout.show(contentPanel, "STATISTICS"));
             btnAppoinment.addActionListener(e -> cardLayout.show(contentPanel, "APPOINTMENTS"));
             btnItinary.addActionListener(e -> cardLayout.show(contentPanel, "ITINERARY"));
         }
@@ -232,7 +229,6 @@ public class MainDashboard extends JFrame {
         contentPanel.add(new AppointmentView(), "APPOINTMENTS");
         contentPanel.add(new OrderView(), "ORDERS");
         contentPanel.add(new ItinereryView(),"ITINERARY");
-        contentPanel.add(createPagePanel("THỐNG KÊ", "Biểu đồ doanh thu"), "STATISTICS");
         }
 
         add(contentPanel, BorderLayout.CENTER);

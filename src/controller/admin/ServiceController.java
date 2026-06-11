@@ -149,7 +149,7 @@ public List<String> getAllServiceNames() {
 
     return serviceNames;
 }
-public int getServiceIdByName(String name) {
+    public int getServiceIdByName(String name) {
 
     int id = -1;
 
@@ -188,6 +188,86 @@ public int getServiceIdByName(String name) {
 
     return id;
 }
+    
+    public ServiceModel getServiceById(int id) {
+        ServiceModel service = null;
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM services WHERE id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                service = new ServiceModel();
+                service.setId(rs.getInt("id"));
+                service.setName(rs.getString("name"));
+                service.setDescription(rs.getString("description"));
+                service.setPrice(rs.getDouble("price"));
+                service.setImage(rs.getString("image"));
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return service;
+    }
+
+    public boolean insertService(ServiceModel service) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "INSERT INTO services(name, description, price, image) VALUES(?,?,?,?)";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, service.getName());
+            ps.setString(2, service.getDescription());
+            ps.setDouble(3, service.getPrice());
+            ps.setString(4, service.getImage());
+            int result = ps.executeUpdate();
+            ps.close();
+            conn.close();
+            return result > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateService(ServiceModel service) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "UPDATE services SET name=?, description=?, price=?, image=? WHERE id=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, service.getName());
+            ps.setString(2, service.getDescription());
+            ps.setDouble(3, service.getPrice());
+            ps.setString(4, service.getImage());
+            ps.setInt(5, service.getId());
+            int result = ps.executeUpdate();
+            ps.close();
+            conn.close();
+            return result > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteService(int id) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "DELETE FROM services WHERE id=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            int result = ps.executeUpdate();
+            ps.close();
+            conn.close();
+            return result > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     public static void main(String[] args) {
         List<ServiceModel> userList = new ServiceController().getAllService();
         System.out.println(userList.size()+"hiển thị danh sách bác sĩ");

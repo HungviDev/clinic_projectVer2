@@ -9,6 +9,7 @@ import ui.admin.UserView;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import com.toedter.calendar.JDateChooser;
 
 public class UserAddForm extends JDialog {
 
@@ -18,7 +19,8 @@ public class UserAddForm extends JDialog {
 
     private JPasswordField txtPassword;
 
-    private JTextField txtBirthDate;
+    // ĐÃ ĐỔI TỪ JTextField SANG JDateChooser
+    private JDateChooser dateChooserAppointment;
 
     private JTextField txtAddress;
 
@@ -89,7 +91,8 @@ public class UserAddForm extends JDialog {
 
         txtPassword = new JPasswordField();
 
-        txtBirthDate = new JTextField();
+        dateChooserAppointment = new JDateChooser();
+        dateChooserAppointment.setDateFormatString("dd/MM/yyyy");
 
         txtAddress = new JTextField();
 
@@ -107,7 +110,7 @@ public class UserAddForm extends JDialog {
         formPanel.add(txtPassword);
 
         formPanel.add(createLabel("Ngày sinh"));
-        formPanel.add(txtBirthDate);
+        formPanel.add(dateChooserAppointment);
 
         formPanel.add(createLabel("Địa chỉ"));
         formPanel.add(txtAddress);
@@ -170,7 +173,7 @@ private void insertUser() {
                 txtPassword.getPassword()
         );
 
-        String birth = txtBirthDate.getText().trim();
+        Date birthDate = dateChooserAppointment.getDate();
 
         String address = txtAddress.getText().trim();
 
@@ -189,7 +192,7 @@ private void insertUser() {
                 fullName.isEmpty() ||
                 phone.isEmpty() ||
                 password.isEmpty() ||
-                birth.isEmpty() ||
+                birthDate == null ||
                 email.isEmpty()
         ) {
 
@@ -200,16 +203,6 @@ private void insertUser() {
 
             return;
         }
-
-        // =====================================
-        // CONVERT DATE
-        // =====================================
-        SimpleDateFormat sdf =
-                new SimpleDateFormat("dd/MM/yyyy");
-
-        sdf.setLenient(false);
-
-        Date birthDate = sdf.parse(birth);
 
         System.out.println("BirthDate Parsed: " + birthDate);
 

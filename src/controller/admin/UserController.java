@@ -13,6 +13,34 @@ import model.admin.UserModel;
 
 public class UserController {
 
+    public UserModel getUserById(int id) {
+        UserModel user = null;
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT * FROM users WHERE id = ? AND role_id = 3";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                user = new UserModel();
+                user.setId(rs.getInt("id"));
+                user.setFullName(rs.getString("fullname"));
+                user.setPhone(rs.getString("phone"));
+                user.setPassword(rs.getString("password"));
+                user.setBirthDate(rs.getDate("birth_date"));
+                user.setAddress(rs.getString("address"));
+                user.setAvatar(rs.getString("avatar"));
+                user.setEmail(rs.getString("email"));
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return user;
+    }
+
     // =====================================
     // GET ALL USERS
     // =====================================

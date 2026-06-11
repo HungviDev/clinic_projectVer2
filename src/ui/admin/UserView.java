@@ -101,11 +101,6 @@ public class UserView extends JPanel {
                         "Thêm",
                         SUCCESS_COLOR
                 );
-         JButton btnDetail =
-                createButton(
-                        "Chi tiết",
-                        SUCCESS_COLOR
-                );
         JButton btnUpdate =
                 createButton(
                         "Sửa",
@@ -126,7 +121,6 @@ public class UserView extends JPanel {
 
         buttonPanel.add(btnDelete);
 
-        buttonPanel.add(btnDetail);
 
         // =====================================
         // ADD EVENT
@@ -138,30 +132,26 @@ public class UserView extends JPanel {
             UserAddForm form =
                     new UserAddForm(parentFrame);
             form.setVisible(true);
+            loadAllUser();
         });
-        btnDetail.addActionListener(e->{
-                
+
+        // =====================================
+        // UPDATE EVENT
+        // =====================================
+        btnUpdate.addActionListener(e -> {
             int row = table.getSelectedRow();
-                if (row != -1) {
-
-                        // Lấy id ở cột đầu tiên (cột 0)
-                        int id = Integer.parseInt(
-                                table.getValueAt(row, 0).toString()
-                        );
-                        JFrame parentFrame =
-                        (JFrame) SwingUtilities
-                                        .getWindowAncestor(this);
-                        TreatmentDetailController controller =
-                                new TreatmentDetailController();
-                        
-                        TreatmentDetail treatmentDetail =
-                                controller.getDetail(id);
-                        DetailForm form =
-                                new DetailForm(parentFrame,treatmentDetail);
-                        form.setVisible(true);
-                }
-
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn người dùng");
+                return;
+            }
+            int id = Integer.parseInt(table.getValueAt(row, 0).toString());
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            ui.admin.form.UserEditForm form = new ui.admin.form.UserEditForm(parentFrame, id);
+            form.setVisible(true);
+            loadAllUser();
         });
+
+
         // =====================================
         // DELETE EVENT
         // =====================================
