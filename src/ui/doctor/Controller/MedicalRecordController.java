@@ -164,21 +164,50 @@ public class MedicalRecordController {
         try {
             conn = getDbConnection();
             conn.setAutoCommit(false);
+            
+            // 1. Cập nhật giai đoạn hiện tại thành Đã hoàn thành
             try (PreparedStatement ps1 = conn.prepareStatement("UPDATE treatment_stages SET status = N'Đã hoàn thành', updated_at = GETDATE() WHERE id = ?")) {
                 ps1.setInt(1, currentStageId);
                 ps1.executeUpdate();
             }
+            
+            // 2. Tìm giai đoạn tiếp theo
             int nextStageId = -1;
             try (PreparedStatement ps2 = conn.prepareStatement("SELECT TOP 1 id FROM treatment_stages WHERE treatment_route_id = ? AND status <> N'Đã hoàn thành' ORDER BY sequence_order ASC")) {
                 ps2.setInt(1, routeId);
-                try (ResultSet rs = ps2.executeQuery()) { if (rs.next()) nextStageId = rs.getInt("id"); }
+                try (ResultSet rs = ps2.executeQuery()) { 
+                    if (rs.next()) nextStageId = rs.getInt("id"); 
+                }
             }
+            
             if (nextStageId != -1) {
+                // 3. Có giai đoạn tiếp theo -> cập nhật nó thành Đang thực hiện
                 try (PreparedStatement ps3 = conn.prepareStatement("UPDATE treatment_stages SET status = N'Đang thực hiện', updated_at = GETDATE() WHERE id = ?")) {
                     ps3.setInt(1, nextStageId);
                     ps3.executeUpdate();
                 }
+            } else {
+                // KHÔNG CÒN GIAI ĐOẠN NÀO NỮA -> LỘ TRÌNH ĐÃ HOÀN THÀNH TOÀN BỘ
+                // Cập nhật trạng thái lịch hẹn tương ứng thành completed
+                String updateApptSql = """
+                    UPDATE a
+                    SET a.status = 'completed'
+                    FROM appointments a
+                    INNER JOIN medical_records mr ON a.user_id = mr.user_id 
+                                                  AND a.doctor_id = mr.doctor_id
+                                                  AND CAST(a.appointment_date AS DATE) = CAST(mr.created_at AS DATE)
+                    WHERE mr.treatment_route_id = ? 
+                      AND a.status = 'approved'
+                """;
+                try (PreparedStatement ps4 = conn.prepareStatement(updateApptSql)) {
+                    ps4.setInt(1, routeId);
+                    int rows = ps4.executeUpdate();
+                    if (rows > 0) {
+                        System.out.println("Đã cập nhật trạng thái lịch hẹn thành 'completed' do lộ trình đã hoàn thành.");
+                    }
+                }
             }
+            
             conn.commit();
             return true;
         } catch (SQLException e) {

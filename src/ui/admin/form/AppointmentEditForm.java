@@ -79,7 +79,7 @@ public class AppointmentEditForm extends JDialog {
         dateChooserAppointment.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         dateChooserAppointment.setPreferredSize(new Dimension(200, 35));
 
-        String[] statuses = {"Chờ duyệt", "Đã duyệt", "Hoàn thành", "Đã hủy", "Từ chối"};
+        String[] statuses = {"Chờ duyệt", "Đã duyệt", "Đã hủy", "Từ chối"};
         cbStatus = new JComboBox<>(statuses);
         cbStatus.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cbStatus.setPreferredSize(new Dimension(200, 35));
@@ -200,7 +200,6 @@ public class AppointmentEditForm extends JDialog {
             String displayStatus = "Chờ duyệt";
             if ("Pending".equalsIgnoreCase(dbStatus)) displayStatus = "Chờ duyệt";
             else if ("Approved".equalsIgnoreCase(dbStatus)) displayStatus = "Đã duyệt";
-            else if ("Completed".equalsIgnoreCase(dbStatus)) displayStatus = "Hoàn thành";
             else if ("Cancel".equalsIgnoreCase(dbStatus)) displayStatus = "Đã hủy";
             else if ("Reject".equalsIgnoreCase(dbStatus)) displayStatus = "Từ chối";
 
@@ -221,7 +220,6 @@ public class AppointmentEditForm extends JDialog {
             String dbStatus = "Pending";
             if ("Chờ duyệt".equals(displayStatus)) dbStatus = "Pending";
             else if ("Đã duyệt".equals(displayStatus)) dbStatus = "Approved";
-            else if ("Hoàn thành".equals(displayStatus)) dbStatus = "Completed";
             else if ("Đã hủy".equals(displayStatus)) dbStatus = "Cancel";
             else if ("Từ chối".equals(displayStatus)) dbStatus = "Reject";
             

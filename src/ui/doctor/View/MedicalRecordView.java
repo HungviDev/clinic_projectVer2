@@ -181,15 +181,21 @@ public class MedicalRecordView extends JPanel {
         lblStartDate.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblStartDate.setForeground(new Color(120, 120, 120));
 
-        // 🌟 THÊM DÒNG NÀY: Hiển thị Tên Lộ trình
         JLabel lblRoute = new JLabel("Lộ trình điều trị: " + record.getRouteName());
         lblRoute.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblRoute.setForeground(new Color(41, 128, 185)); // Màu xanh dương
 
-        // 🌟 THÊM DÒNG NÀY: Hiển thị Giai đoạn hiện tại
         JLabel lblStage = new JLabel("Giai đoạn hiện tại: " + record.getCurrentStage());
         lblStage.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblStage.setForeground(new Color(39, 174, 96)); // Màu xanh lá
+        
+        // Đổi màu xanh lá nếu đã hoàn thành lộ trình, nếu chưa thì màu bình thường
+        if ("Đã hoàn thành lộ trình".equals(record.getCurrentStage())) {
+            lblStage.setForeground(new Color(39, 174, 96)); // Màu xanh lá
+        } else if ("Chưa có lộ trình".equals(record.getCurrentStage())) {
+            lblStage.setForeground(new Color(231, 76, 60)); // Đỏ cảnh báo
+        } else {
+            lblStage.setForeground(new Color(243, 156, 18)); // Cam cho Đang thực hiện
+        }
 
         infoPanel.add(Box.createVerticalGlue());
         infoPanel.add(lblName);

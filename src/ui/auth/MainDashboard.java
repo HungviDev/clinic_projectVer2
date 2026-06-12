@@ -156,7 +156,6 @@ public class MainDashboard extends JFrame {
             JButton btnServices = createMenuButton("Quản lý dịch vụ");
             JButton btnAppoinment = createMenuButton("Quản lý lịch hẹn");
             JButton btnOrders = createMenuButton("Quản lý đơn hàng");
-            JButton btnItinary = createMenuButton("Quản lý lộ trình điều trị");
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnUsers);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -169,13 +168,11 @@ public class MainDashboard extends JFrame {
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnAppoinment);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
-            sidebar.add(btnItinary);
             btnUsers.addActionListener(e -> cardLayout.show(contentPanel, "USERS"));
             btnDoctors.addActionListener(e -> cardLayout.show(contentPanel, "DOCTORS"));
             btnServices.addActionListener(e -> cardLayout.show(contentPanel, "SERVICES_ADMIN"));
             btnOrders.addActionListener(e -> cardLayout.show(contentPanel, "ORDERS"));
             btnAppoinment.addActionListener(e -> cardLayout.show(contentPanel, "APPOINTMENTS"));
-            btnItinary.addActionListener(e -> cardLayout.show(contentPanel, "ITINERARY"));
         }
 
         // ================= LOGOUT =================

@@ -97,15 +97,15 @@ public class AppointmentController {
             ps.setInt(3, appointmentId);
             boolean success = ps.executeUpdate() > 0;
             
-            // Chỉ đổ dữ liệu xuống bệnh án / lộ trình khi trạng thái là "completed"
-            if (success && newStatus.equalsIgnoreCase("completed")) {
+            // Thay đổi logic: Đổ dữ liệu xuống bệnh án / lộ trình khi trạng thái là "approved"
+            if (success && newStatus.equalsIgnoreCase("approved")) {
                 handleAppointmentCompletion(appointmentId, realDoctorId);
             }
             return success;
         } catch (Exception e) { e.printStackTrace(); return false; }
     }
 
-    // 5. XỬ LÝ KHI HOÀN THÀNH CA KHÁM (PHÂN NHÁNH LOGIC)
+    // 5. XỬ LÝ KHI PHÊ DUYỆT CA KHÁM (PHÂN NHÁNH LOGIC)
     public void handleAppointmentCompletion(int appointmentId, int realDoctorId) {
         DentalAppointmentModel appt = getAppointmentById(appointmentId);
         
@@ -113,7 +113,6 @@ public class AppointmentController {
             String stage = appt.getStageName();
             int userId = findUserIdByName(appt.getPatientName());
             
-            // ĐIỀU KIỆN: Kiểm tra stage_name là null, rỗng, chữ "NULL", chữ "Không có" hoặc "Chưa có"
             boolean isNewMedicalRecord = (stage == null 
                               || stage.trim().isEmpty() 
                               || stage.equalsIgnoreCase("null") 
@@ -121,30 +120,50 @@ public class AppointmentController {
                               || stage.equalsIgnoreCase("Chưa có")); 
 
             if (isNewMedicalRecord) {
-                // ==========================================
-                // NHÁNH 1: Khám mới -> Tạo bệnh án (Medical Record)
-                // ==========================================
-                int serviceId = findServiceIdByName(appt.getProblem());
-                String fullDate = appt.getAppointmentDate() + " " + appt.getAppointmentTime() + ":00";
-                
-                String sql = "INSERT INTO medical_records (user_id, doctor_id, diagnosis, created_at, service_id) VALUES (?, ?, ?, ?, ?)";
-                try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-                    ps.setInt(1, userId);
-                    ps.setInt(2, (realDoctorId != -1) ? realDoctorId : 1);
-                    ps.setString(3, appt.getProblem());
-                    ps.setString(4, fullDate);
-                    
-                    if (serviceId > 0) {
-                        ps.setInt(5, serviceId);
-                    } else {
-                        ps.setNull(5, java.sql.Types.INTEGER);
+                // Kiểm tra xem đã có bệnh án cho lịch hẹn này chưa để tránh tạo trùng lặp
+                boolean recordExists = false;
+                try (Connection conn = DBConnection.getConnection(); 
+                     PreparedStatement checkPs = conn.prepareStatement(
+                             "SELECT COUNT(*) FROM medical_records WHERE user_id = ? AND CAST(created_at AS DATE) = CAST(? AS DATE) AND diagnosis = ?")) {
+                    checkPs.setInt(1, userId);
+                    checkPs.setString(2, appt.getAppointmentDate());
+                    checkPs.setString(3, appt.getProblem());
+                    ResultSet rs = checkPs.executeQuery();
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        recordExists = true;
                     }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+                if (!recordExists) {
+                    // ==========================================
+                    // NHÁNH 1: Khám mới -> Tạo bệnh án (Medical Record)
+                    // ==========================================
+                    int serviceId = findServiceIdByName(appt.getProblem());
+                    String fullDate = appt.getAppointmentDate() + " " + appt.getAppointmentTime() + ":00";
                     
-                    ps.executeUpdate();
-                    MedicalRecordView.refreshData();
-                    System.out.println("Đã tạo mới Bệnh án cho lịch hẹn ID: " + appointmentId);
-                } catch (SQLException e) { 
-                    e.printStackTrace(); 
+                    String sql = "INSERT INTO medical_records (user_id, doctor_id, diagnosis, created_at, service_id, treatment_route_id) VALUES (?, ?, ?, ?, ?, NULL)";
+                    try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+                        ps.setInt(1, userId);
+                        ps.setInt(2, (realDoctorId != -1) ? realDoctorId : 1);
+                        ps.setString(3, appt.getProblem());
+                        ps.setString(4, fullDate);
+                        
+                        if (serviceId > 0) {
+                            ps.setInt(5, serviceId);
+                        } else {
+                            ps.setNull(5, java.sql.Types.INTEGER);
+                        }
+                        
+                        ps.executeUpdate();
+                        MedicalRecordView.refreshData();
+                        System.out.println("Đã tạo mới Bệnh án cho lịch hẹn ID: " + appointmentId);
+                    } catch (SQLException e) { 
+                        e.printStackTrace(); 
+                    }
+                } else {
+                    System.out.println("Bệnh án cho lịch hẹn này đã tồn tại, bỏ qua tạo mới.");
                 }
             } else {
                 // ==========================================
