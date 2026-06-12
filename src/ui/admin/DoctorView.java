@@ -127,7 +127,7 @@ public class DoctorView extends JPanel {
                 JOptionPane.showMessageDialog(this, "Vui lòng chọn bác sĩ");
                 return;
             }
-            int id = Integer.parseInt(table.getModel().getValueAt(row, 0).toString());
+            int id = Integer.parseInt(table.getValueAt(row, 0).toString());
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
             ui.admin.form.DoctorEditForm form = new ui.admin.form.DoctorEditForm(parentFrame, this, id);
             form.setVisible(true);
@@ -151,9 +151,7 @@ public class DoctorView extends JPanel {
             }
 
             int id = Integer.parseInt(
-                    table.getModel()
-                            .getValueAt(row, 0)
-                            .toString()
+                    table.getValueAt(row, 0).toString()
             );
 
             int confirm =

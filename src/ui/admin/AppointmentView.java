@@ -2,6 +2,7 @@ package ui.admin;
 
 import controller.admin.AppointmentController;
 import model.admin.AppointmentModel;
+import ui.admin.form.AppointmentEditForm;
 import ui.admin.form.AppointmentForm;
 import ui.admin.form.UserAddForm;
 
@@ -94,27 +95,24 @@ public class AppointmentView extends JPanel {
 
         JButton btnAdd =
                 createButton(
-                        "Tạo mới cuộc hẹn",
+                        "Tạo lịch hẹn",
                         SUCCESS_COLOR
                 );
-
+        JButton btnUpdate =
+                        createButton(
+                                "Sửa lịch hẹn",
+                                SUCCESS_COLOR
+                        );
         JButton btnDelete =
                 createButton(
                         "Xóa",
                         DANGER_COLOR
                 );
 
-        JButton btnRefresh =
-                createButton(
-                        "Làm mới",
-                        WARNING_COLOR
-                );
 
         buttonPanel.add(btnAdd);
-
+        buttonPanel.add(btnUpdate);
         buttonPanel.add(btnDelete);
-
-        buttonPanel.add(btnRefresh);
         btnAdd.addActionListener(e ->{
             JFrame parentFrame =
                     (JFrame) SwingUtilities
@@ -124,18 +122,54 @@ public class AppointmentView extends JPanel {
 
             form.setVisible(true);
         });
-        // =====================================
-        // REFRESH EVENT
-        // =====================================
-        btnRefresh.addActionListener(e -> {
+        btnUpdate.addActionListener(e -> {
+        JFrame parentFrame =
+                    (JFrame) SwingUtilities
+                            .getWindowAncestor(this);
+        int row = table.getSelectedRow();
+        if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn cuộc hẹn để sửa");
+                return;
+        }
 
-            loadAllAppointment();
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Đã tải lại dữ liệu"
-            );
+        int id = Integer.parseInt(table.getValueAt(row, 0).toString());
+        AppointmentEditForm appointmentEditForm = new AppointmentEditForm(parentFrame,this,id);
+        appointmentEditForm.setVisible(true);
+        
         });
+
+        // =====================================
+        // XÓA EVENT
+        // =====================================
+        btnDelete.addActionListener(e -> {
+        int row = table.getSelectedRow();
+        if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn cuộc hẹn để xóa");
+                return;
+        }
+
+        int id = Integer.parseInt(table.getValueAt(row, 0).toString());
+        
+        int confirm = JOptionPane.showConfirmDialog(
+                this, 
+                "Bạn có chắc chắn muốn xóa cuộc hẹn này (ID: " + id + ")?", 
+                "Xác nhận xóa", 
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+                boolean result = appointmentController.deleteAppointment(id);
+                if (result) {
+                JOptionPane.showMessageDialog(this, "Xóa cuộc hẹn thành công!");
+                loadAllAppointment();
+                } else {
+                JOptionPane.showMessageDialog(this, "Xóa cuộc hẹn thất bại!");
+                }
+        }
+        });
+
+ 
 
         topPanel.add(buttonPanel, BorderLayout.EAST);
 
@@ -249,14 +283,11 @@ public class AppointmentView extends JPanel {
     // LOAD ALL APPOINTMENT
     // =====================================
     public void loadAllAppointment() {
-
+        appointmentController.cancelPastAppointments();
         try {
-
             model.setRowCount(0);
-
             List<AppointmentModel> appointmentList =
                     appointmentController.getAllAppointment();
-
             appointmentList.forEach(appointment -> {
                 String status = appointment.getStatus();
                 if ("pending".equalsIgnoreCase(status)) {
@@ -267,6 +298,9 @@ public class AppointmentView extends JPanel {
                         status = "Từ chối";
                 } else if ("completed".equalsIgnoreCase(status)) {
                         status = "Hoàn thành";
+                }
+                else if ("cancel".equalsIgnoreCase(status)) {
+                        status = "Đã hủy";
                 }
                 model.addRow(new Object[]{
 

@@ -18,7 +18,6 @@ public class DoctorEditForm extends JDialog {
     private JPasswordField txtPassword;
     private JDateChooser dateChooserAppointment;
     private JTextField txtAddress;
-    private JTextField txtAvatar;
     private JTextField txtEmail;
     private JTextField txtSpecialization;
     private JTextField txtExperience;
@@ -57,7 +56,6 @@ public class DoctorEditForm extends JDialog {
         dateChooserAppointment = new JDateChooser();
         dateChooserAppointment.setDateFormatString("dd/MM/yyyy");
         txtAddress = new JTextField();
-        txtAvatar = new JTextField();
         txtEmail = new JTextField();
         txtSpecialization = new JTextField();
         txtExperience = new JTextField();
@@ -72,8 +70,6 @@ public class DoctorEditForm extends JDialog {
         formPanel.add(dateChooserAppointment);
         formPanel.add(createLabel("Địa chỉ"));
         formPanel.add(txtAddress);
-        formPanel.add(createLabel("Avatar"));
-        formPanel.add(txtAvatar);
         formPanel.add(createLabel("Email"));
         formPanel.add(txtEmail);
         formPanel.add(createLabel("Chuyên ngành"));
@@ -107,7 +103,6 @@ public class DoctorEditForm extends JDialog {
                 dateChooserAppointment.setDate(doctor.getBirthDate());
             }
             txtAddress.setText(doctor.getAddress());
-            txtAvatar.setText(doctor.getAvatar());
             txtEmail.setText(doctor.getEmail());
             txtSpecialization.setText(doctor.getSpecialization());
             txtExperience.setText(String.valueOf(doctor.getExperience()));
@@ -124,7 +119,6 @@ public class DoctorEditForm extends JDialog {
             String password = String.valueOf(txtPassword.getPassword());
             Date birthDate = dateChooserAppointment.getDate();
             String address = txtAddress.getText().trim();
-            String avatar = txtAvatar.getText().trim();
             String email = txtEmail.getText().trim();
             String specialization = txtSpecialization.getText().trim();
             String experienceStr = txtExperience.getText().trim();
@@ -149,7 +143,6 @@ public class DoctorEditForm extends JDialog {
             doctor.setPassword(password);
             doctor.setBirthDate(birthDate);
             doctor.setAddress(address);
-            doctor.setAvatar(avatar);
             doctor.setEmail(email);
             doctor.setSpecialization(specialization);
             doctor.setExperience(experience);

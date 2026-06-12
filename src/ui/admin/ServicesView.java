@@ -2,6 +2,7 @@ package ui.admin;
 
 import controller.admin.ServiceController;
 import model.admin.ServiceModel;
+import ui.admin.form.ServiceEditForm;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -40,9 +41,8 @@ public class ServicesView extends JPanel {
     // =====================================
     // CONTROLLER
     // =====================================
-    private ServiceController serviceController =
-            new ServiceController();
-
+    private ServiceController serviceController = new ServiceController();
+    private int idService;    
     // =====================================
     // CONSTRUCTOR
     // =====================================
@@ -115,10 +115,50 @@ public class ServicesView extends JPanel {
 
         buttonPanel.add(btnDelete);
 
-
-        // =====================================
-        // REFRESH EVENT
-        // =====================================
+        btnAdd.addActionListener(e -> {
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            ServiceEditForm form = new ServiceEditForm(parentFrame, this, 0); // 0 = Thêm mới
+            form.setVisible(true);
+        });
+        btnUpdate.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn dịch vụ để sửa");
+                return;
+            }
+            idService = Integer.parseInt(table.getValueAt(row, 0).toString());
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            ServiceEditForm form = new ServiceEditForm(parentFrame, this, idService);
+            form.setVisible(true);
+        });
+        btnDelete.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn dịch vụ để xóa");
+                return;
+            }
+            
+            idService = Integer.parseInt(table.getValueAt(row, 0).toString());
+            String name = table.getValueAt(row, 1).toString();
+            
+            int confirm = JOptionPane.showConfirmDialog(
+                    this, 
+                    "Bạn có chắc chắn muốn xóa dịch vụ: " + name + "?", 
+                    "Xác nhận xóa", 
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+            
+            if (confirm == JOptionPane.YES_OPTION) {
+                boolean result = serviceController.deleteService(idService);
+                if (result) {
+                    JOptionPane.showMessageDialog(this, "Xóa dịch vụ thành công!");
+                    loadAllService();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Xóa dịch vụ thất bại!");
+                }
+            }
+        });
   
 
         topPanel.add(buttonPanel, BorderLayout.EAST);
@@ -252,8 +292,6 @@ public class ServicesView extends JPanel {
 
                         service.getImage()
                 });
-
-                System.out.println(service);
             });
 
         } catch (Exception e) {

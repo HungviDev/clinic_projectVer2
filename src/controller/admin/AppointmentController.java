@@ -86,7 +86,114 @@ public class AppointmentController {
 
         return appointmentList;
     }
-    public int countAppointments() {
+    public void cancelPastAppointments() {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "UPDATE appointments SET status = 'Cancel' WHERE status = 'Pending' AND CAST(appointment_date AS DATE) < CAST(GETDATE() AS DATE)";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.executeUpdate();
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public boolean deleteAppointment(int id) {
+        boolean check = false;
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "DELETE FROM appointments WHERE id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            
+            int result = ps.executeUpdate();
+            if (result > 0) {
+                check = true;
+            }
+            
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return check;
+    }
+
+    public boolean updateAppointment(AppointmentModel appointment) {
+        boolean check = false;
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = """
+                    UPDATE appointments 
+                    SET 
+                        appointment_date = ?,
+                        status = ?
+                    WHERE id = ?
+                    """;
+            
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
+            java.sql.Date sqlDate = new java.sql.Date(appointment.getAppointmentDate().getTime());
+            
+            ps.setDate(1, sqlDate);
+            ps.setString(2, appointment.getStatus());
+            ps.setInt(3, appointment.getId());
+            
+            int result = ps.executeUpdate();
+            if (result > 0) {
+                check = true;
+            }
+            
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return check;
+    }
+    
+    public AppointmentModel getAppointmentById(int id) {
+        AppointmentModel appointment = null;
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = """
+                    SELECT
+                        appointments.id AS appointment_id,
+                        doctor_user.fullname AS doctor_name,
+                        patient_user.fullname AS patient_name,
+                        appointments.appointment_date,
+                        appointments.status
+                    FROM appointments
+                    INNER JOIN doctors
+                        ON appointments.doctor_id = doctors.id
+                    INNER JOIN users AS doctor_user
+                        ON doctors.user_id = doctor_user.id
+                    INNER JOIN users AS patient_user
+                        ON appointments.user_id = patient_user.id
+                    WHERE appointments.id = ?
+                    """;
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                appointment = new AppointmentModel();
+                appointment.setId(rs.getInt("appointment_id"));
+                appointment.setDoctorName(rs.getString("doctor_name"));
+                appointment.setPatientName(rs.getString("patient_name"));
+                appointment.setAppointmentDate(rs.getDate("appointment_date"));
+                appointment.setStatus(rs.getString("status"));
+            }
+            
+            rs.close();
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return appointment;
+    }
+        public int countAppointments() {
 
     int total = 0;
 
