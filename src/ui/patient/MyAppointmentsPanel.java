@@ -21,8 +21,11 @@ public class MyAppointmentsPanel extends JPanel {
     private final Color TEXT_DARK = new Color(44, 62, 80);
     private final Color TEXT_MUTED = new Color(149, 165, 166);
     private final Color PRIMARY_PASTEL = new Color(133, 193, 233);
-    private final Color STATUS_BLUE = new Color(52, 152, 219); // Màu cho "Đã duyệt"
-    private final Color STATUS_GRAY = new Color(189, 195, 199); // Màu cho "Kết thúc/Hủy"
+    
+    // Các màu trạng thái
+    private final Color STATUS_BLUE = new Color(52, 152, 219);     // Màu xanh dương cho "Đã duyệt/Chờ duyệt"
+    private final Color STATUS_GRAY = new Color(189, 195, 199);    // Màu xám cho "Kết thúc/Hủy"
+    private final Color COLOR_SUCCESS = new Color(39, 174, 96);    // Màu xanh lá cây cho "Đã hoàn thành"
 
     private int loggedInUserId;
     private JPanel listPanel;
@@ -81,10 +84,12 @@ public class MyAppointmentsPanel extends JPanel {
 
             for (Appointment app : appointments) {
 
-                String timeStr =
-                        app.getAppointmentDate()
-                                .toLocalDateTime()
-                                .format(formatter);
+                String timeStr = "Chưa xếp lịch";
+                if (app.getAppointmentDate() != null) {
+                    timeStr = app.getAppointmentDate()
+                                    .toLocalDateTime()
+                                    .format(formatter);
+                }
 
                 listPanel.add(createAppointmentCard(
                         app.getId(),
@@ -103,7 +108,7 @@ public class MyAppointmentsPanel extends JPanel {
         listPanel.repaint();
     }
 
-    // ================= TẠO THẺ LỊCH HẸN (GIỐNG ẢNH MẪU) =================
+    // ================= TẠO THẺ LỊCH HẸN =================
     private JPanel createAppointmentCard(int id, String time, String status, String service, String doctor, String note) {
         JPanel card = new JPanel();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
@@ -120,33 +125,55 @@ public class MyAppointmentsPanel extends JPanel {
         lblTime.setFont(new Font("Segoe UI", Font.BOLD, 17));
         lblTime.setForeground(TEXT_DARK);
         
-        // 2. Trạng thái (Badge)
+        // 2. Trạng thái (Badge) - HIỂN THỊ CHỮ DỊCH
         JLabel lblBadge = new JLabel(" " + translateStatus(status) + " ");
         lblBadge.setOpaque(true);
         lblBadge.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lblBadge.setForeground(Color.WHITE);
-        lblBadge.setBackground(status.equalsIgnoreCase("Approved") || status.equalsIgnoreCase("Pending") ? STATUS_BLUE : STATUS_GRAY);
+        
+        // PHÂN LOẠI MÀU SẮC DỰA TRÊN TRẠNG THÁI GỐC (status)
+        if ("Completed".equalsIgnoreCase(status)) {
+            lblBadge.setBackground(COLOR_SUCCESS); // Xanh lá
+        } else if ("Approved".equalsIgnoreCase(status) ) {
+            lblBadge.setBackground(STATUS_BLUE); // Xanh dương
+        } else if ("Pending".equalsIgnoreCase(status) ){
+            lblBadge.setBackground(new Color(243, 156, 18));
+        } else {
+            lblBadge.setBackground(STATUS_GRAY); // Xám (Hủy/Kết thúc)
+        }
+            
+        
 
-        // 3. Các dòng thông tin (Bỏ Emoji để tránh lỗi ô vuông)
+        // 3. Các dòng thông tin 
         JPanel infoPanel = new JPanel(new GridLayout(4, 1, 0, 5));
         infoPanel.setBackground(Color.WHITE);
-        infoPanel.add(createRow("Chi nhánh:", "Cơ sở chính")); // Mặc định vì ERD không có bảng Branch
+        infoPanel.add(createRow("Chi nhánh:", "Cơ sở chính")); 
         infoPanel.add(createRow("Bác sĩ:", doctor != null ? doctor : "Đang cập nhật"));
         infoPanel.add(createRow("Dịch vụ:", service != null ? service : "Khám tổng quát"));
         infoPanel.add(createRow("Nội dung:", note != null ? note : "Không có ghi chú"));
 
-        card.add(lblTime);
-        card.add(Box.createRigidArea(new Dimension(0, 8)));
-        card.add(lblBadge);
+        // Gộp vào Card
+        // Gom Time và Badge vào 1 panel chung để có giao diện đẹp hơn, badge nằm ngay dưới time
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+        topPanel.setBackground(Color.WHITE);
+        topPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        lblTime.setAlignmentX(Component.LEFT_ALIGNMENT);
+        lblBadge.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        topPanel.add(lblTime);
+        topPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        topPanel.add(lblBadge);
+
+        card.add(topPanel);
         card.add(Box.createRigidArea(new Dimension(0, 12)));
         card.add(infoPanel);
 
-        // Sự kiện Click: Nhảy sang trang chi tiết (ID thật từ DB)
+        // Sự kiện Click: Nhảy sang trang chi tiết
         card.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Chúng ta sẽ dùng cái hàm cũ trong HomePatientPanel hoặc tạo 1 Popup/Panel mới
-                // Ở đây tôi sẽ gọi hàm show chi tiết (Bạn cần đảm bảo MainDashboard có trang này)
                 switchPageToDetail(id);
             }
             @Override
@@ -176,7 +203,10 @@ public class MyAppointmentsPanel extends JPanel {
         return row;
     }
 
+    // ĐÃ THÊM: Dịch chuỗi Completed -> Đã hoàn thành
     private String translateStatus(String st) {
+        if (st == null) return "Không rõ";
+        if (st.equalsIgnoreCase("Completed")) return "Đã hoàn thành";
         if (st.equalsIgnoreCase("Pending")) return "Chờ duyệt";
         if (st.equalsIgnoreCase("Approved")) return "Đã duyệt";
         if (st.equalsIgnoreCase("Done")) return "Kết thúc";
@@ -185,8 +215,7 @@ public class MyAppointmentsPanel extends JPanel {
     }
 
     private void switchPageToDetail(int appointmentId) {
-            Window window = SwingUtilities.getWindowAncestor(this);
-            // Gọi class vừa tạo, truyền logic "tải lại danh sách" vào khi hủy thành công
-            new AppointmentDetailDialog(window, appointmentId, () -> loadData()).setVisible(true);
-        }
+        Window window = SwingUtilities.getWindowAncestor(this);
+        new AppointmentDetailDialog(window, appointmentId, () -> loadData()).setVisible(true);
+    }
 }

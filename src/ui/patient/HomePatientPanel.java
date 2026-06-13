@@ -35,6 +35,11 @@ public class HomePatientPanel extends JPanel {
     private final Color COLOR_TEXT_DARK = new Color(44, 62, 80);
     private final Color COLOR_TEXT_MUTED = new Color(149, 165, 166);
     private final Color COLOR_DANGER = new Color(231, 76, 60); // Đỏ pastel cho nút Hủy
+    
+    // Thêm màu sắc cho trạng thái trong Popup
+    private final Color COLOR_SUCCESS = new Color(39, 174, 96);    // Xanh lá cho Completed
+    private final Color COLOR_WARNING = new Color(243, 156, 18);   // Cam cho Pending
+    private final Color COLOR_CANCELLED = new Color(149, 165, 166); // Xám cho Cancelled
 
     private YearMonth currentYearMonth;
     private JPanel calendarGrid;
@@ -43,8 +48,7 @@ public class HomePatientPanel extends JPanel {
     
     private int loggedInUserId;
     private Set<LocalDate> bookedDates;
-    private AppointmentService appointmentService =
-        new AppointmentService();
+    private AppointmentService appointmentService = new AppointmentService();
 
     public HomePatientPanel(int userId, String patientName) {
         this.loggedInUserId = userId;
@@ -281,19 +285,19 @@ public class HomePatientPanel extends JPanel {
 
             hasData = true;
 
-            String serviceName =
-                    app.getServiceName();
-
+            String serviceName = app.getServiceName();
             if (serviceName == null) {
                 serviceName = "Khám tổng quát";
             }
 
             String status = app.getStatus();
 
-            String timeStr =
-                    app.getAppointmentDate()
+            String timeStr = "Không rõ";
+            if(app.getAppointmentDate() != null) {
+                timeStr = app.getAppointmentDate()
                             .toLocalDateTime()
                             .format(timeFormatter);
+            }
 
             JPanel card =
                     createDailyItemCard(
@@ -337,6 +341,7 @@ public class HomePatientPanel extends JPanel {
         dialog.setVisible(true);
     }
 
+    // ================= TẠO THẺ ITEM TRONG POPUP NGÀY (CẬP NHẬT TRẠNG THÁI) =================
     private JPanel createDailyItemCard(String serviceName, String time, String status) {
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(Color.WHITE);
@@ -356,8 +361,28 @@ public class HomePatientPanel extends JPanel {
         left.add(lblService);
         left.add(lblTime);
 
-        JLabel lblStatus = new JLabel(status.equalsIgnoreCase("Pending") ? "Chờ duyệt" : (status.equalsIgnoreCase("Done") ? "Hoàn thành" : "Đã duyệt"));
-        lblStatus.setForeground(COLOR_BLUE_BADGE);
+        // LOGIC CHUYỂN ĐỔI NGÔN NGỮ VÀ MÀU SẮC
+        String statusText = "Không rõ";
+        Color statusColor = COLOR_TEXT_MUTED;
+
+        if (status != null) {
+            if (status.equalsIgnoreCase("Pending")) {
+                statusText = "Chờ duyệt";
+                statusColor = COLOR_WARNING; // Màu cam
+            } else if (status.equalsIgnoreCase("Approved")) {
+                statusText = "Đã duyệt";
+                statusColor = COLOR_BLUE_BADGE; // Màu xanh dương
+            } else if (status.equalsIgnoreCase("Completed")) {
+                statusText = "Đã hoàn thành";
+                statusColor = COLOR_SUCCESS; // Màu xanh lá cây
+            } else if (status.equalsIgnoreCase("Cancelled")) {
+                statusText = "Đã hủy";
+                statusColor = COLOR_CANCELLED; // Màu xám
+            }
+        }
+
+        JLabel lblStatus = new JLabel(statusText);
+        lblStatus.setForeground(statusColor);
         lblStatus.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         card.add(left, BorderLayout.WEST);
@@ -379,7 +404,7 @@ public class HomePatientPanel extends JPanel {
     }
     
 
-    // ================= HÀM TẠO DÒNG DỮ LIỆU SẠCH (KHÔNG EMOJI) =================
+    // ================= HÀM TẠO DÒNG DỮ LIỆU SẠCH =================
     private JPanel createDataRow(String label, String value) {
         JPanel row = new JPanel(new BorderLayout(15, 0));
         row.setBackground(Color.WHITE);
