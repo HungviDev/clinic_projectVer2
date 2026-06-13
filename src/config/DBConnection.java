@@ -8,7 +8,7 @@ public class DBConnection {
         try {
             String url = "jdbc:sqlserver://localhost:1433;databaseName=DentalClinicDB;encrypt=false";
             String user = "sa";
-            String pass = "1234";
+            String pass = "123";
 
             return DriverManager.getConnection(url, user, pass);
         } catch (Exception e) {
