@@ -1,15 +1,15 @@
 package controller.admin;
 
-import model.admin.RoadmapModel;
-
+import config.DBConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement; // Bổ sung thư viện này để lấy ID vừa tạo
-import java.util.ArrayList;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList; // Bổ sung thư viện này để lấy ID vừa tạo
 import java.util.List;
-
-import config.DBConnection;
+import model.admin.RoadmapModel;
+import model.admin.StepRoadMapModel;
 
 public class RoadMapController {
 
@@ -166,4 +166,170 @@ public class RoadMapController {
         List<RoadmapModel> roadmapList = roadmapController.getAllRoadmap();
         System.out.println(roadmapList.size());
     }
+    //đây
+public boolean insertStageAndCreatePayment(StepRoadMapModel step) {
+    Connection conn = null;
+    PreparedStatement psCheck = null;
+    PreparedStatement psStage = null;
+    PreparedStatement psPayment = null;
+    ResultSet rs = null;
+
+    boolean isSuccess = false;
+
+    try {
+        conn = DBConnection.getConnection();
+        conn.setAutoCommit(false);
+
+        // ==========================================
+        // BƯỚC 1: TÌM BỆNH NHÂN THEO LỘ TRÌNH
+        // ==========================================
+        int patientUserId = -1;
+
+        String sqlCheck =
+                "SELECT TOP 1 user_id " +
+                "FROM medical_records " +
+                "WHERE treatment_route_id = ?";
+
+        psCheck = conn.prepareStatement(sqlCheck);
+        psCheck.setInt(1, step.getTreatmentRouteId());
+
+        rs = psCheck.executeQuery();
+
+        if (rs.next()) {
+            patientUserId = rs.getInt("user_id");
+        }
+
+        rs.close();
+
+        if (patientUserId == -1) {
+            System.err.println(
+                    "Không tìm thấy bệnh nhân của lộ trình ID = "
+                    + step.getTreatmentRouteId());
+
+            conn.rollback();
+            return false;
+        }
+
+       // ==========================================
+// BƯỚC 2: THÊM GIAI ĐOẠN ĐIỀU TRỊ
+// TỰ TÍNH APPOINTMENT_DATE THEO DELAY
+// ==========================================
+String sqlStage =
+        "DECLARE @LastDate DATETIME; " +
+
+        "SELECT TOP 1 @LastDate = appointment_date " +
+        "FROM treatment_stages " +
+        "WHERE treatment_route_id = ? " +
+        "ORDER BY sequence_order DESC; " +
+
+        "IF @LastDate IS NULL " +
+        "SET @LastDate = GETDATE(); " +
+
+        "INSERT INTO treatment_stages (" +
+        "treatment_route_id, stage_name, sequence_order, delay, " +
+        "appointment_date, cost, note, status" +
+        ") VALUES (?, ?, ?, ?, DATEADD(day, ?, @LastDate), ?, ?, N'Chưa thực hiện');";
+
+psStage = conn.prepareStatement(
+        sqlStage,
+        Statement.RETURN_GENERATED_KEYS
+);
+
+// Tham số cho SELECT tìm ngày gần nhất
+psStage.setInt(1, step.getTreatmentRouteId());
+
+// Tham số cho INSERT
+psStage.setInt(2, step.getTreatmentRouteId());
+psStage.setString(3, step.getStageName());
+psStage.setInt(4, step.getSequenceOrder());
+psStage.setInt(5, step.getDelay());
+
+// DATEADD(day, ?, @LastDate)
+psStage.setInt(6, step.getDelay());
+
+psStage.setDouble(7, step.getCost());
+psStage.setString(8, step.getNote());
+
+int stageRows = psStage.executeUpdate();
+
+        // ==========================================
+        // BƯỚC 3: LẤY ID STAGE VỪA TẠO
+        // ==========================================
+        int newStageId = -1;
+
+        rs = psStage.getGeneratedKeys();
+
+        if (rs.next()) {
+            newStageId = rs.getInt(1);
+        }
+
+        rs.close();
+
+        if (newStageId == -1) {
+            conn.rollback();
+            return false;
+        }
+
+        // ==========================================
+        // BƯỚC 4: TẠO PAYMENT
+        // ==========================================
+        String sqlPayment =
+                "INSERT INTO payments " +
+                "(user_id, treatment_stage_id, amount, method, status, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, GETDATE())";
+
+        psPayment = conn.prepareStatement(sqlPayment);
+
+        psPayment.setInt(1, patientUserId);
+        psPayment.setInt(2, newStageId);
+        psPayment.setDouble(3, step.getCost());
+        psPayment.setString(4, "Tiền mặt");
+        psPayment.setString(5, "Chưa thanh toán");
+
+        int paymentRows = psPayment.executeUpdate();
+
+        if (paymentRows <= 0) {
+            conn.rollback();
+            return false;
+        }
+
+        // ==========================================
+        // BƯỚC 5: COMMIT
+        // ==========================================
+        conn.commit();
+        isSuccess = true;
+
+    } catch (Exception e) {
+
+        try {
+            if (conn != null) {
+                conn.rollback();
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        System.err.println("🔥 Lỗi SQL/Java: " + e.getMessage());
+        e.printStackTrace();
+
+    } finally {
+
+        try {
+            if (rs != null) rs.close();
+            if (psCheck != null) psCheck.close();
+            if (psStage != null) psStage.close();
+            if (psPayment != null) psPayment.close();
+
+            if (conn != null) {
+                conn.setAutoCommit(true);
+                conn.close();
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    return isSuccess;
+}
 }  

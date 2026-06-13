@@ -1,19 +1,17 @@
 package ui.admin;
 
+import controller.admin.MedicalRecordController;
+import controller.admin.RoadMapController;
+import controller.admin.StepRoadMapController;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.HashMap; // Khai báo thêm Controller này
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-
-import controller.admin.RoadMapController;
-import controller.admin.StepRoadMapController;
-import controller.admin.MedicalRecordController; // Khai báo thêm Controller này
 import model.admin.RoadmapModel;
 import model.admin.StepRoadMapModel;
-
-import java.util.List;
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class ItinereryView extends JPanel {
 
@@ -407,8 +405,9 @@ public class ItinereryView extends JPanel {
                     step.setCost(Double.parseDouble(txtCost.getText().isEmpty() ? "0" : txtCost.getText()));
                     step.setNote(txtNote.getText());
                     step.setStatus("Chưa thực hiện");
-
-                    boolean inserted = stepController.insertStepByRouteId(step);
+                    
+                    boolean inserted = roadmapController.insertStageAndCreatePayment(step);
+                  
                     if (inserted) {
                         JOptionPane.showMessageDialog(null, "Thêm giai đoạn thành công");
                         loadSteps(itineraryId);

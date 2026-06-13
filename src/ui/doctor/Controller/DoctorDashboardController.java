@@ -39,13 +39,15 @@ public class DoctorDashboardController {
                 "AND YEAR(a.appointment_date) = YEAR(GETDATE())";
                 
         // 4. Doanh thu thực tế phát sinh trong ngày hôm nay của riêng bác sĩ này
-        String sqlRevenueToday = 
-                "SELECT ISNULL(SUM(p.amount), 0) " +
-                "FROM payments p " +
-                "JOIN appointments a ON p.appointment_id = a.id " +
-                "JOIN doctors d ON a.doctor_id = d.id " +
-                "WHERE d.user_id = ? AND CAST(p.created_at AS DATE) = CAST(GETDATE() AS DATE)";
-
+        // 4. Doanh thu thực tế phát sinh trong ngày hôm nay của riêng bác sĩ này
+String sqlRevenueToday = 
+        "SELECT ISNULL(SUM(p.amount), 0) " +
+        "FROM payments p " +
+        "JOIN treatment_stages ts ON p.treatment_stage_id = ts.id " +
+        "JOIN medical_records mr ON ts.treatment_route_id = mr.treatment_route_id " +
+        "JOIN doctors d ON mr.doctor_id = d.id " +
+        "WHERE d.user_id = ? " +
+        "AND CAST(p.created_at AS DATE) = CAST(GETDATE() AS DATE)";
         try (Connection conn = DBConnection.getConnection()) {
             
             // 1. Số lịch hẹn hôm nay

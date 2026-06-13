@@ -5,6 +5,7 @@ import java.awt.*;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
 import ui.doctor.Controller.MedicalRecordController;
 import ui.doctor.Model.MedicalRecordModel;
 

@@ -156,10 +156,12 @@ public class AppointmentController {
         }
     }
 
-    // 6. HÀM MỚI: CẬP NHẬT TRẠNG THÁI GIAI ĐOẠN ĐIỀU TRỊ 
+    // 6. HÀM MỚI: CẬP NHẬT TRẠNG THÁI GIAI ĐOẠN ĐIỀU TRỊ VÀ HÓA ĐƠN
     private void updateTreatmentStageStatus(String stageName, int userId) {
-        // Dùng INNER JOIN với medical_records để đảm bảo cập nhật đúng lộ trình của khách hàng này
-        String sql = """
+        Connection conn = null;
+        
+        // Lệnh 1: Cập nhật bảng treatment_stages
+        String sqlStage = """
             UPDATE ts
             SET ts.status = N'Đã hoàn thành'
             FROM treatment_stages ts
@@ -167,21 +169,57 @@ public class AppointmentController {
             WHERE ts.stage_name = ? AND mr.user_id = ?
         """;
         
-        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, stageName);
-            ps.setInt(2, userId);
-            
-            int rowsAffected = ps.executeUpdate();
-            if (rowsAffected > 0) {
-                System.out.println("Đã tự động cập nhật trạng thái 'Đã hoàn thành' cho giai đoạn: " + stageName);
-            } else {
-                System.out.println("Không tìm thấy giai đoạn khớp để cập nhật. Tên giai đoạn: " + stageName);
+        // Lệnh 2: Cập nhật bảng payments sang 'paid'
+        String sqlPayment = """
+        UPDATE p
+        SET p.status = N'Đã thanh toán'
+        FROM payments p
+        INNER JOIN treatment_stages ts ON p.treatment_stage_id = ts.id
+        INNER JOIN medical_records mr ON ts.treatment_route_id = mr.treatment_route_id
+        WHERE ts.stage_name = ? AND mr.user_id = ?
+   """;
+        
+        try {
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false); // Khởi tạo Transaction
+
+            try (PreparedStatement psStage = conn.prepareStatement(sqlStage)) {
+                psStage.setString(1, stageName);
+                psStage.setInt(2, userId);
+                
+                int rowsAffected = psStage.executeUpdate();
+                if (rowsAffected > 0) {
+                    System.out.println("Đã tự động cập nhật trạng thái 'Đã hoàn thành' cho giai đoạn: " + stageName);
+                    
+                    // Nếu cập nhật giai đoạn thành công thì chốt luôn hóa đơn
+                    try (PreparedStatement psPayment = conn.prepareStatement(sqlPayment)) {
+                        psPayment.setString(1, stageName);
+                        psPayment.setInt(2, userId);
+                        psPayment.executeUpdate();
+                        System.out.println("Đã tự động cập nhật thanh toán 'paid' cho hóa đơn của giai đoạn: " + stageName);
+                    }
+                } else {
+                    System.out.println("Không tìm thấy giai đoạn khớp để cập nhật. Tên giai đoạn: " + stageName);
+                }
             }
+            conn.commit();
         } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
             e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try { 
+                    conn.setAutoCommit(true); 
+                    conn.close(); 
+                } catch (SQLException e) { 
+                    e.printStackTrace(); 
+                }
+            }
         }
     }
-
+//đây
     // --- TIỆN ÍCH HỖ TRỢ ---
     public DentalAppointmentModel getAppointmentById(int id) {
         String sql = "SELECT a.id, u.fullname AS patient_name, CONVERT(VARCHAR(10), a.appointment_date, 120) AS appointment_date, CONVERT(VARCHAR(5), a.appointment_date, 108) AS appointment_time, ISNULL(s.name, '') AS problem, a.status, a.stage_name FROM appointments a JOIN users u ON a.user_id = u.id LEFT JOIN services s ON a.service_id = s.id WHERE a.id = ?";
