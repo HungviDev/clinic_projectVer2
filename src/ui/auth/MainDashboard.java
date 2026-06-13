@@ -3,6 +3,9 @@ package ui.auth;
 import controller.user.DashboardController;
 import java.awt.*;
 import java.sql.Date;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import model.user.User;
 import ui.admin.AppointmentView;
 import ui.admin.DashboardView;
 import ui.admin.DoctorView;
@@ -10,19 +13,9 @@ import ui.admin.ItinereryView;
 import ui.admin.OrderView;
 import ui.admin.ServicesView;
 import ui.admin.UserView;
-import ui.auth.LoginForm;
 import ui.doctor.View.DoctorDashboardView;
 import ui.doctor.View.MedicalRecordView;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-
-import ui.admin.UserView;
 import ui.patient.*;
-import controller.user.DashboardController;
-import model.user.User;
-
-import java.awt.*;
 
 public class MainDashboard extends JFrame {
 
@@ -129,7 +122,7 @@ public class MainDashboard extends JFrame {
         if(controller.isDoctor()) {
             JButton btnSchedule = createMenuButton("Lịch khám");
             JButton btnMedical = createMenuButton("Hồ sơ bệnh án");
-            JButton btnItinary = createMenuButton("Quản lý lộ trình điều trị");
+            JButton btnItinary = createMenuButton("Tạo lộ trình");
             JButton btnPatients = createMenuButton("Bệnh nhân");
             
             sidebar.add(btnSchedule);

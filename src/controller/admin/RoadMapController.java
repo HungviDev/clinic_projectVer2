@@ -274,17 +274,19 @@ int stageRows = psStage.executeUpdate();
         // BƯỚC 4: TẠO PAYMENT
         // ==========================================
         String sqlPayment =
-                "INSERT INTO payments " +
-                "(user_id, treatment_stage_id, amount, method, status, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, GETDATE())";
+    "INSERT INTO payments " +
+    "(user_id, treatment_stage_id, amount, method, status, created_at) " +
+    "VALUES (?, ?, ?, ?, ?, " +
+    "(SELECT appointment_date FROM treatment_stages WHERE id = ?))";
 
-        psPayment = conn.prepareStatement(sqlPayment);
+     psPayment = conn.prepareStatement(sqlPayment);
 
-        psPayment.setInt(1, patientUserId);
-        psPayment.setInt(2, newStageId);
-        psPayment.setDouble(3, step.getCost());
-        psPayment.setString(4, "Tiền mặt");
-        psPayment.setString(5, "Chưa thanh toán");
+     psPayment.setInt(1, patientUserId);
+     psPayment.setInt(2, newStageId);
+     psPayment.setDouble(3, step.getCost());
+     psPayment.setString(4, "Tiền mặt");
+     psPayment.setString(5, "Chưa thanh toán");
+     psPayment.setInt(6, newStageId);
 
         int paymentRows = psPayment.executeUpdate();
 
