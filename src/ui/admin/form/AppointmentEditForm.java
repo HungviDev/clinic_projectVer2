@@ -3,8 +3,10 @@ package ui.admin.form;
 import com.toedter.calendar.JDateChooser;
 
 import controller.admin.AppointmentController;
+import controller.admin.DoctorController;
 import model.admin.AppointmentModel;
 import ui.admin.AppointmentView;
+import ui.doctor.View.MedicalRecordView;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -28,26 +30,29 @@ public class AppointmentEditForm extends JDialog {
 
     private AppointmentController appointmentController;
     private AppointmentModel appointmentModel;
+    private ui.doctor.Controller.AppointmentController appointmentControllerDoctor;
     private AppointmentView appointmentView;
+    private DoctorController doctorController;
     private int id;
+
 
     public AppointmentEditForm(JFrame parent, AppointmentView appointmentView, int id) {
         super(parent, "SỬA LỊCH HẸN", true);
         this.appointmentView = appointmentView;
         this.id = id;
         this.appointmentController = new AppointmentController();
-        
         initUI();
         loadData();
     }
 
     private void initUI() {
+        appointmentControllerDoctor = new ui.doctor.Controller.AppointmentController();
+        doctorController = new DoctorController();
         setSize(450, 400);
         setLocationRelativeTo(null);
         setResizable(false);
         setLayout(new BorderLayout());
         getContentPane().setBackground(MAIN_BG);
-
         JLabel lblTitle = new JLabel("CHI TIẾT & CẬP NHẬT LỊCH HẸN", SwingConstants.CENTER);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblTitle.setForeground(PRIMARY_DARK);
@@ -79,7 +84,7 @@ public class AppointmentEditForm extends JDialog {
         dateChooserAppointment.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         dateChooserAppointment.setPreferredSize(new Dimension(200, 35));
 
-        String[] statuses = {"Chờ duyệt", "Đã duyệt", "Đã hủy", "Từ chối"};
+        String[] statuses = {"Chờ duyệt", "Đã duyệt", "Đã hủy", "Từ chối","Hoàn Thành"};
         cbStatus = new JComboBox<>(statuses);
         cbStatus.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         cbStatus.setPreferredSize(new Dimension(200, 35));
@@ -200,9 +205,9 @@ public class AppointmentEditForm extends JDialog {
             String displayStatus = "Chờ duyệt";
             if ("Pending".equalsIgnoreCase(dbStatus)) displayStatus = "Chờ duyệt";
             else if ("Approved".equalsIgnoreCase(dbStatus)) displayStatus = "Đã duyệt";
+            else if ("completed".equalsIgnoreCase(dbStatus)) displayStatus = "Hoàn Thành";
             else if ("Cancel".equalsIgnoreCase(dbStatus)) displayStatus = "Đã hủy";
             else if ("Reject".equalsIgnoreCase(dbStatus)) displayStatus = "Từ chối";
-
             cbStatus.setSelectedItem(displayStatus);
         } else {
             JOptionPane.showMessageDialog(this, "Không tìm thấy lịch hẹn!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -220,6 +225,7 @@ public class AppointmentEditForm extends JDialog {
             String dbStatus = "Pending";
             if ("Chờ duyệt".equals(displayStatus)) dbStatus = "Pending";
             else if ("Đã duyệt".equals(displayStatus)) dbStatus = "Approved";
+            else if("Hoàn Thành".equals(displayStatus)) dbStatus = "Completed";
             else if ("Đã hủy".equals(displayStatus)) dbStatus = "Cancel";
             else if ("Từ chối".equals(displayStatus)) dbStatus = "Reject";
             
@@ -238,9 +244,19 @@ public class AppointmentEditForm extends JDialog {
                 JOptionPane.showMessageDialog(this, "Cập nhật lịch hẹn thành công!");
                 appointmentView.loadAllAppointment();
                 dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Cập nhật thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
+            // viết hàm lấy id by name doctor
+                int iddoctor = appointmentController.getDoctorIdByAppointmentId(appointmentModel.getId());
+                int idUserdotor = doctorController.getUseridbyidDoctor(iddoctor);
+                    if (appointmentControllerDoctor.updateStatus(appointmentModel.getId(), appointmentModel.getStatus(), idUserdotor)) {
+                        String statusVi = "";
+                        switch (appointmentModel.getStatus()) {
+                            case "approved" -> statusVi = "Đã duyệt";
+                            case "completed" -> statusVi = "Đã hoàn thành";
+                            case "reject" -> statusVi = "Đã hủy";
+                            default -> statusVi = appointmentModel.getStatus();
+                        }
+                    }           
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Đã có lỗi xảy ra. Vui lòng thử lại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();

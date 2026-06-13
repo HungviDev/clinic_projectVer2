@@ -15,12 +15,12 @@ public class PaymentDAO {
 
         List<Payment> list = new ArrayList<>();
 
-        String sql =
+        // Đã cập nhật lại luồng JOIN: payments -> treatment_stages
+        String sql = 
                 "SELECT p.amount, p.method, p.status, " +
-                "p.created_at, s.name AS service_name " +
+                "p.created_at, ts.stage_name AS service_name " +
                 "FROM payments p " +
-                "LEFT JOIN appointments a ON p.appointment_id = a.id " +
-                "LEFT JOIN services s ON a.service_id = s.id " +
+                "LEFT JOIN treatment_stages ts ON p.treatment_stage_id = ts.id " +
                 "WHERE p.user_id = ? " +
                 "ORDER BY p.created_at DESC";
 
@@ -34,13 +34,13 @@ public class PaymentDAO {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-
+                // Java mapping vẫn giữ nguyên vì SQL đã dùng alias 'AS service_name'
                 Payment payment = new Payment(
                         rs.getDouble("amount"),
                         rs.getString("method"),
                         rs.getString("status"),
                         rs.getTimestamp("created_at"),
-                        rs.getString("service_name")
+                        rs.getString("service_name") 
                 );
 
                 list.add(payment);

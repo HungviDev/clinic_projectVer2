@@ -344,6 +344,25 @@ public class DoctorController {
 
         return -1;
     }
+    public int getUseridbyidDoctor(int id){
+        int userId = 0;
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT user_id FROM doctors WHERE id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                userId = rs.getInt("user_id");
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return userId;
+    }
     
     public static void main(String[] args) {
         List<DoctorModel> userList = new DoctorController().getAllDoctor();

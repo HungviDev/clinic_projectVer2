@@ -121,23 +121,17 @@ public class AppointmentView extends JPanel {
         model.setRowCount(0);
         List<DentalAppointmentModel> list = controller.getAppointmentsByDoctor(doctorId);
         for (DentalAppointmentModel ap : list) {
-            String status = ap.getStatus();
-                if ("pending".equalsIgnoreCase(status)) {
-                        status = "Chờ duyệt";
-                } else if ("approved".equalsIgnoreCase(status)) {
-                        status = "Đã duyệt";
-                } else if ("reject".equalsIgnoreCase(status)) {
-                        status = "Từ chối";
-                } else if ("completed".equalsIgnoreCase(status)) {
-                        status = "Hoàn thành";
-                }
-                else if ("cancel".equalsIgnoreCase(status)) {
-                        status = "Đã hủy";
-                }
+            String displayStatus = switch (ap.getStatus().toLowerCase()) {
+                case "pending" -> "Chờ khám";
+                case "approved" -> "Đã duyệt";
+                case "reject" -> "Đã hủy";
+                case "completed" -> "Đã hoàn thành";
+                default -> ap.getStatus();
+            };
 
             model.addRow(new Object[]{
                 ap.getId(), ap.getPatientName(), ap.getAppointmentDate(), 
-                ap.getAppointmentTime(), ap.getProblem(), status, ap.getStageName()
+                ap.getAppointmentTime(), ap.getProblem(), displayStatus, ap.getStageName()
             });
         }
     }
@@ -146,10 +140,10 @@ public class AppointmentView extends JPanel {
         int row = table.getSelectedRow();
         if (row == -1) return;
 
-        String displayStatus = model.getValueAt(row, 5).toString();
-        // Sửa ở đây: Chỉ chặn nếu là "Đã hủy/Từ chối", cho phép mở "Đã duyệt"
-        if (displayStatus.equalsIgnoreCase("Đã hủy/Từ chối")) {
-            JOptionPane.showMessageDialog(this, "Lịch hẹn đã bị hủy hoặc từ chối, không thể chỉnh sửa!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+        String status = model.getValueAt(row, 5).toString();
+        // Sửa ở đây: Chỉ chặn nếu là "Đã hủy" hoặc "Đã hoàn thành", cho phép mở "Đã duyệt"
+        if (status.equalsIgnoreCase("Đã hủy") || status.equalsIgnoreCase("Đã hoàn thành")) {
+            JOptionPane.showMessageDialog(this, "Lịch hẹn đã kết thúc, không thể chỉnh sửa!", "Thông báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -159,13 +153,8 @@ public class AppointmentView extends JPanel {
         ap.setAppointmentDate(model.getValueAt(row, 2).toString());
         ap.setAppointmentTime(model.getValueAt(row, 3).toString());
         ap.setProblem(model.getValueAt(row, 4).toString());
-        
-        // Truyền trạng thái gốc DB vào Dialog
-        String dbStatus = "pending";
-        if (displayStatus.equals("Đã duyệt")) dbStatus = "approved";
-        else if (displayStatus.equals("Đã hủy/Từ chối")) dbStatus = "reject";
-        ap.setStatus(dbStatus);
-        
+        // Truyền đúng trạng thái gốc vào để Dialog xử lý
+        ap.setStatus(status.equals("Đã duyệt") ? "approved" : "pending");
         ap.setStageName(model.getValueAt(row, 6).toString());
         
         new AppointmentDialog(this, ap, this.doctorId);

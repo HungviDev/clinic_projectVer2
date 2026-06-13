@@ -3,26 +3,20 @@ package ui.auth;
 import controller.user.DashboardController;
 import java.awt.*;
 import java.sql.Date;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import model.user.User;
 import ui.admin.AppointmentView;
 import ui.admin.DashboardView;
 import ui.admin.DoctorView;
+import ui.admin.InvoiceView;
 import ui.admin.ItinereryView;
 import ui.admin.OrderView;
 import ui.admin.ServicesView;
 import ui.admin.UserView;
-import ui.auth.LoginForm;
 import ui.doctor.View.DoctorDashboardView;
 import ui.doctor.View.MedicalRecordView;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-
-import ui.admin.UserView;
 import ui.patient.*;
-import controller.user.DashboardController;
-import model.user.User;
-
-import java.awt.*;
 
 public class MainDashboard extends JFrame {
 
@@ -129,7 +123,7 @@ public class MainDashboard extends JFrame {
         if(controller.isDoctor()) {
             JButton btnSchedule = createMenuButton("Lịch khám");
             JButton btnMedical = createMenuButton("Hồ sơ bệnh án");
-            JButton btnItinary = createMenuButton("Quản lý lộ trình điều trị");
+            JButton btnItinary = createMenuButton("Tạo lộ trình");
             JButton btnPatients = createMenuButton("Bệnh nhân");
             
             sidebar.add(btnSchedule);
@@ -156,6 +150,7 @@ public class MainDashboard extends JFrame {
             JButton btnServices = createMenuButton("Quản lý dịch vụ");
             JButton btnAppoinment = createMenuButton("Quản lý lịch hẹn");
             JButton btnOrders = createMenuButton("Quản lý đơn hàng");
+            JButton btnInvoice = createMenuButton("Quản lý hóa đơn");
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnUsers);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -168,11 +163,14 @@ public class MainDashboard extends JFrame {
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnAppoinment);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
+            sidebar.add(btnInvoice);
+            sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             btnUsers.addActionListener(e -> cardLayout.show(contentPanel, "USERS"));
             btnDoctors.addActionListener(e -> cardLayout.show(contentPanel, "DOCTORS"));
             btnServices.addActionListener(e -> cardLayout.show(contentPanel, "SERVICES_ADMIN"));
             btnOrders.addActionListener(e -> cardLayout.show(contentPanel, "ORDERS"));
             btnAppoinment.addActionListener(e -> cardLayout.show(contentPanel, "APPOINTMENTS"));
+            btnInvoice.addActionListener(e -> cardLayout.show(contentPanel, "INVOICE"));
         }
 
         // ================= LOGOUT =================
@@ -226,6 +224,7 @@ public class MainDashboard extends JFrame {
         contentPanel.add(new AppointmentView(), "APPOINTMENTS");
         contentPanel.add(new OrderView(), "ORDERS");
         contentPanel.add(new ItinereryView(),"ITINERARY");
+        contentPanel.add(new InvoiceView(), "INVOICE");
         }
 
         add(contentPanel, BorderLayout.CENTER);

@@ -108,7 +108,10 @@ public class AppointmentDialog {
         java.util.List<String> optionsList = new java.util.ArrayList<>();
         if ("pending".equals(status)) {
             optionsList.add("Đã duyệt");
-            optionsList.add("Từ chối lịch hẹn");
+            optionsList.add("Hủy lịch hẹn");
+        } else if ("approved".equals(status)) {
+            optionsList.add("Đã hoàn thành");
+            optionsList.add("Hủy lịch hẹn");
         }
         optionsList.add("Đóng");
 
@@ -124,7 +127,8 @@ public class AppointmentDialog {
             String newStatus = "";
 
             if ("Đã duyệt".equals(choice)) newStatus = "approved";
-            else if ("Từ chối lịch hẹn".equals(choice)) newStatus = "reject";
+            else if ("Đã hoàn thành".equals(choice)) newStatus = "completed";
+            else if ("Hủy lịch hẹn".equals(choice)) newStatus = "reject";
             else return; // Người dùng chọn "Đóng"
 
             // Thực hiện update vào Database
@@ -133,7 +137,8 @@ public class AppointmentDialog {
                 String statusVi = "";
                 switch (newStatus) {
                     case "approved" -> statusVi = "Đã duyệt";
-                    case "reject" -> statusVi = "Đã từ chối";
+                    case "completed" -> statusVi = "Đã hoàn thành";
+                    case "reject" -> statusVi = "Đã hủy";
                     default -> statusVi = newStatus;
                 }
                 

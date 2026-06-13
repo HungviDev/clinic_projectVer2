@@ -306,6 +306,26 @@ public class AppointmentController {
 
     return check;
 }
+//get iddoctor by idappointment
+    public int getDoctorIdByAppointmentId(int id) {
+        int doctorId = 0;
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = "SELECT doctor_id FROM appointments WHERE id = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                doctorId = rs.getInt("doctor_id");
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return doctorId;
+    }
     public static void main(String[] args) {
         List<AppointmentModel> userList = new AppointmentController().getAllAppointment();
         System.out.println(userList.size()+"hiển thị danh sách bác sĩ");
