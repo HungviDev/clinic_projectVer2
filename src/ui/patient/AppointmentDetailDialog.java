@@ -13,23 +13,25 @@ public class AppointmentDetailDialog extends JDialog {
     private final Color COLOR_BG = new Color(248, 250, 252);
     private final Color TEXT_DARK = new Color(44, 62, 80);
     private final Color TEXT_MUTED = new Color(149, 165, 166);
+    private final Color COLOR_SUCCESS = new Color(39, 174, 96); // Màu xanh lá cây cho trạng thái Hoàn thành
+    private final Color STATUS_BLUE = new Color(52, 152, 219);     // Màu xanh dương cho "Đã duyệt/Chờ duyệt"
+    private final Color STATUS_GRAY = new Color(189, 195, 199);    // Màu xám cho "Kết thúc/Hủy"
+    
     private AppointmentDetailController controller;
 
-    // Tham số thứ 3 là một "Hành động" (Runnable) để báo cho trang gốc biết cần làm mới dữ liệu
     public AppointmentDetailDialog(
-        Window parent,
-        int appointmentId,
-        Runnable onCancelSuccess
-) {
+            Window parent,
+            int appointmentId,
+            Runnable onCancelSuccess
+    ) {
 
-    super(
-            parent,
-            "Chi tiết lịch hẹn",
-            Dialog.ModalityType.APPLICATION_MODAL
-    );
+        super(
+                parent,
+                "Chi tiết lịch hẹn",
+                Dialog.ModalityType.APPLICATION_MODAL
+        );
 
-    controller =
-            new AppointmentDetailController();
+        controller = new AppointmentDetailController();
         setSize(450, 700);
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout());
@@ -39,8 +41,7 @@ public class AppointmentDetailDialog extends JDialog {
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBackground(COLOR_BG);
 
-        AppointmentDetail detail =
-                controller.getDetail(appointmentId);
+        AppointmentDetail detail = controller.getDetail(appointmentId);
 
         // TẠO GIAO DIỆN KHÁCH HÀNG
         JPanel pnlCustomer = new JPanel();
@@ -70,6 +71,9 @@ public class AppointmentDetailDialog extends JDialog {
         pnlTreatment.add(createDataRow("Bác sĩ:", detail.getDoctor()));
         pnlTreatment.add(createDataRow("Ngày hẹn:", detail.getDate()));
         pnlTreatment.add(createDataRow("Khung giờ:", detail.getTime()));
+        
+        // HIỂN THỊ TRẠNG THÁI (MỚI THÊM)
+        pnlTreatment.add(createStatusRow("Trạng thái:", detail.getStatus()));
 
         mainPanel.add(pnlCustomer);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 10))); 
@@ -77,9 +81,10 @@ public class AppointmentDetailDialog extends JDialog {
         add(new JScrollPane(mainPanel), BorderLayout.CENTER);
 
         // NÚT HỦY LỊCH HẸN
-        if (controller.canCancel(
-                detail.getStatus()
-        )) {
+        String currentStatus = detail.getStatus();
+        
+        // Chặn hủy nếu trạng thái là "Completed"
+        if (!"Completed".equalsIgnoreCase(currentStatus) && controller.canCancel(currentStatus)) {
             JButton btnCancel = new JButton("Huỷ lịch hẹn");
             btnCancel.setFont(new Font("Segoe UI", Font.BOLD, 16));
             btnCancel.setBackground(new Color(231, 76, 60));
@@ -108,6 +113,7 @@ public class AppointmentDetailDialog extends JDialog {
         }
     }
 
+    // Hàm tạo dòng dữ liệu bình thường
     private JPanel createDataRow(String label, String value) {
         JPanel row = new JPanel(new BorderLayout(15, 0));
         row.setBackground(Color.WHITE);
@@ -118,6 +124,43 @@ public class AppointmentDetailDialog extends JDialog {
         JLabel lblVal = new JLabel("<html><div style='text-align: right;'>" + (value != null ? value : "") + "</div></html>", SwingConstants.RIGHT);
         lblVal.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         lblVal.setForeground(TEXT_DARK);
+        row.add(lblLabel, BorderLayout.WEST);
+        row.add(lblVal, BorderLayout.CENTER);
+        return row;
+    }
+
+    // Hàm tạo dòng dữ liệu ĐẶC BIỆT DÀNH RIÊNG CHO TRẠNG THÁI (Đổi chữ + Đổi màu)
+    private JPanel createStatusRow(String label, String statusValue) {
+        JPanel row = new JPanel(new BorderLayout(15, 0));
+        row.setBackground(Color.WHITE);
+        row.setBorder(new EmptyBorder(5, 0, 10, 0));
+        
+        JLabel lblLabel = new JLabel(label);
+        lblLabel.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        lblLabel.setForeground(TEXT_MUTED); 
+        
+        String displayValue = statusValue != null ? statusValue : "Không rõ";
+        Color statusColor = TEXT_DARK; // Mặc định là màu chữ tối
+        
+        // Logic kiểm tra: Nếu là "Completed" thì đổi chữ và tô màu xanh lá
+        if ("completed".equalsIgnoreCase(statusValue)) {
+            displayValue = "Đã hoàn thành";
+            statusColor = COLOR_SUCCESS;
+        } else if ("pending".equalsIgnoreCase(statusValue)) {
+            displayValue = "Chờ duyệt";
+            statusColor = new Color(243, 156, 18); // Màu cam cho lịch chờ (Bonus thêm cho bạn)
+        } else if ("approved".equalsIgnoreCase(statusValue)) {
+            displayValue = "Đã duyệt";
+            statusColor = STATUS_BLUE; 
+        } else if ("cancelled".equalsIgnoreCase(displayValue)) {
+            displayValue = "Đã hủy";
+            statusColor = STATUS_GRAY;
+        }
+
+        JLabel lblVal = new JLabel("<html><div style='text-align: right;'>" + displayValue + "</div></html>", SwingConstants.RIGHT);
+        lblVal.setFont(new Font("Segoe UI", Font.BOLD, 16)); // In đậm chữ trạng thái
+        lblVal.setForeground(statusColor); // Áp dụng màu sắc
+        
         row.add(lblLabel, BorderLayout.WEST);
         row.add(lblVal, BorderLayout.CENTER);
         return row;
