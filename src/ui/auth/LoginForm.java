@@ -149,7 +149,7 @@ private final Color COLOR_BUTTON  = new Color(0, 102, 204);   // xanh đậm cho
         JButton btnLogin = new JButton("Đăng nhập");
         btnLogin.setFont(FONT_BOLD);
         btnLogin.setBackground(COLOR_BUTTON);
-        btnLogin.setForeground(Color.BLUE);
+        btnLogin.setForeground(Color.WHITE);
         btnLogin.setFocusPainted(false);
         btnLogin.setBorder(BorderFactory.createEmptyBorder(12, 0, 12, 0)); // Nút to và cân đối hơn
         btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
