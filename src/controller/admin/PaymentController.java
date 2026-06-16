@@ -2,6 +2,7 @@ package controller.admin;
 
 import config.DBConnection;
 import model.admin.PaymentModel;
+import model.admin.PaymentSummaryModel;
 import model.admin.UserModel;
 
 import java.sql.Connection;
@@ -27,12 +28,84 @@ public class PaymentController {
         }
     }
 
+    public List<PaymentSummaryModel> getPaymentSummary() {
+        List<PaymentSummaryModel> list = new ArrayList<>();
+        String sql = """
+                SELECT u.id AS user_id, 
+                       u.fullname AS patient_name,
+                       SUM(p.amount) AS total_amount,
+                       SUM(CASE WHEN p.status = N'Đã thanh toán' THEN p.amount ELSE 0 END) AS paid_amount,
+                       SUM(CASE WHEN p.status = N'Chưa thanh toán' THEN p.amount ELSE 0 END) AS unpaid_amount
+                FROM payments p
+                JOIN users u ON p.user_id = u.id
+                GROUP BY u.id, u.fullname
+                ORDER BY u.fullname ASC
+                """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()
+        ) {
+            while (rs.next()) {
+                PaymentSummaryModel summary = new PaymentSummaryModel();
+                summary.setUserId(rs.getInt("user_id"));
+                summary.setPatientName(rs.getString("patient_name") != null ? rs.getString("patient_name") : "Chưa xác định");
+                summary.setTotalAmount(rs.getDouble("total_amount"));
+                summary.setPaidAmount(rs.getDouble("paid_amount"));
+                summary.setUnpaidAmount(rs.getDouble("unpaid_amount"));
+                list.add(summary);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<PaymentModel> getPaymentsByUserId(int userId) {
+        List<PaymentModel> list = new ArrayList<>();
+        String sql = """
+                SELECT p.id, p.user_id, u.fullname AS patient_name, p.amount, p.method, p.status, p.created_at, p.treatment_stage_id, ts.stage_name AS treatment_stage_name
+                FROM payments p
+                LEFT JOIN users u ON p.user_id = u.id
+                LEFT JOIN treatment_stages ts ON p.treatment_stage_id = ts.id
+                WHERE p.user_id = ?
+                ORDER BY p.id DESC
+                """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    PaymentModel payment = new PaymentModel();
+                    payment.setId(rs.getInt("id"));
+                    payment.setUserId(rs.getInt("user_id"));
+                    payment.setPatientName(rs.getString("patient_name") != null ? rs.getString("patient_name") : "Chưa xác định");
+                    payment.setAmount(rs.getDouble("amount"));
+                    payment.setMethod(rs.getString("method"));
+                    payment.setStatus(rs.getString("status"));
+                    payment.setCreatedAt(rs.getTimestamp("created_at"));
+                    payment.setTreatmentStageId(rs.getInt("treatment_stage_id"));
+                    payment.setTreatmentStageName(rs.getString("treatment_stage_name"));
+                    list.add(payment);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public List<PaymentModel> getAllPayments() {
         List<PaymentModel> list = new ArrayList<>();
         String sql = """
-                SELECT p.id, p.user_id, u.fullname AS patient_name, p.amount, p.method, p.status, p.created_at, p.treatment_stage_id
+                SELECT p.id, p.user_id, u.fullname AS patient_name, p.amount, p.method, p.status, p.created_at, p.treatment_stage_id, ts.stage_name AS treatment_stage_name
                 FROM payments p
                 LEFT JOIN users u ON p.user_id = u.id
+                LEFT JOIN treatment_stages ts ON p.treatment_stage_id = ts.id
                 ORDER BY p.id DESC
                 """;
 
@@ -51,6 +124,7 @@ public class PaymentController {
                 payment.setStatus(rs.getString("status"));
                 payment.setCreatedAt(rs.getTimestamp("created_at"));
                 payment.setTreatmentStageId(rs.getInt("treatment_stage_id"));
+                payment.setTreatmentStageName(rs.getString("treatment_stage_name"));
 
                 list.add(payment);
             }
@@ -62,9 +136,10 @@ public class PaymentController {
 
     public PaymentModel getPaymentById(int id) {
         String sql = """
-                SELECT p.id, p.user_id, u.fullname AS patient_name, p.amount, p.method, p.status, p.created_at, p.treatment_stage_id
+                SELECT p.id, p.user_id, u.fullname AS patient_name, p.amount, p.method, p.status, p.created_at, p.treatment_stage_id, ts.stage_name AS treatment_stage_name
                 FROM payments p
                 LEFT JOIN users u ON p.user_id = u.id
+                LEFT JOIN treatment_stages ts ON p.treatment_stage_id = ts.id
                 WHERE p.id = ?
                 """;
 
@@ -84,6 +159,7 @@ public class PaymentController {
                     payment.setStatus(rs.getString("status"));
                     payment.setCreatedAt(rs.getTimestamp("created_at"));
                     payment.setTreatmentStageId(rs.getInt("treatment_stage_id"));
+                    payment.setTreatmentStageName(rs.getString("treatment_stage_name"));
                     return payment;
                 }
             }
@@ -217,4 +293,4 @@ public class PaymentController {
         }
         return list;
     }
-}
+}

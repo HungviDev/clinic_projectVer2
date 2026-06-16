@@ -2,8 +2,8 @@ package ui.admin;
 
 import controller.admin.PaymentController;
 import model.admin.PaymentModel;
+import model.admin.PaymentSummaryModel;
 import ui.admin.form.PaymentAddForm;
-import ui.admin.form.PaymentEditForm;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -27,6 +27,7 @@ public class InvoiceView extends JPanel {
 
     private JTable table;
     private DefaultTableModel model;
+    private List<PaymentSummaryModel> summaryList;
 
     private PaymentController paymentController =
             new PaymentController();
@@ -76,21 +77,14 @@ public class InvoiceView extends JPanel {
                         SUCCESS_COLOR
                 );
 
-        JButton btnUpdate =
+        JButton btnDetail =
                 createButton(
-                        "Sửa",
+                        "Chi tiết",
                         PRIMARY_COLOR
                 );
 
-        JButton btnDelete =
-                createButton(
-                        "Xóa",
-                        DANGER_COLOR
-                );
-
         buttonPanel.add(btnAdd);
-        buttonPanel.add(btnUpdate);
-        buttonPanel.add(btnDelete);
+        buttonPanel.add(btnDetail);
 
         // =====================================
         // ADD EVENT
@@ -105,60 +99,30 @@ public class InvoiceView extends JPanel {
         });
 
         // =====================================
-        // UPDATE EVENT
+        // DETAIL EVENT
         // =====================================
-        btnUpdate.addActionListener(e -> {
+        btnDetail.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row == -1) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn cần sửa");
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn bệnh nhân để xem chi tiết");
                 return;
             }
-            int id = Integer.parseInt(table.getValueAt(row, 0).toString());
+            PaymentSummaryModel summary = summaryList.get(row);
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-            PaymentEditForm form = new PaymentEditForm(parentFrame, id);
-            form.setVisible(true);
-            if (form.isSaved()) {
-                loadAllPayments();
-            }
-        });
-
-        // =====================================
-        // DELETE EVENT
-        // =====================================
-        btnDelete.addActionListener(e -> {
-            int row = table.getSelectedRow();
-            if (row == -1) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn cần xóa");
-                return;
-            }
-            int id = Integer.parseInt(table.getValueAt(row, 0).toString());
-            int confirm = JOptionPane.showConfirmDialog(
-                    this,
-                    "Bạn có chắc chắn muốn xóa hóa đơn này?",
-                    "Xác nhận xóa",
-                    JOptionPane.YES_NO_OPTION
-            );
-            if (confirm == JOptionPane.YES_OPTION) {
-                boolean result = paymentController.deletePayment(id);
-                if (result) {
-                    JOptionPane.showMessageDialog(this, "Xóa thành công");
-                    loadAllPayments();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Xóa thất bại");
-                }
-            }
+            InvoiceDetailDialog dialog = new InvoiceDetailDialog(parentFrame, summary);
+            dialog.setVisible(true);
+            // Reload after closing detail dialog because payments might have changed
+            loadAllPayments();
         });
 
         topPanel.add(buttonPanel, BorderLayout.EAST);
 
         String[] columns = {
-                "ID",
+                "Mã Bệnh nhân",
                 "Bệnh nhân",
-                "Số tiền (VND)",
-                "Phương thức",
-                "Trạng thái",
-                "Ngày tạo",
-                "Mã giai đoạn"
+                "Tổng tiền",
+                "Đã thanh toán",
+                "Còn nợ"
         };
 
         model =
@@ -229,21 +193,18 @@ public class InvoiceView extends JPanel {
 
         model.setRowCount(0);
 
-        List<PaymentModel> list =
-                paymentController.getAllPayments();
+        summaryList = paymentController.getPaymentSummary();
 
-        list.forEach(payment -> {
+        java.text.NumberFormat currencyFormat = java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("vi", "VN"));
 
+        summaryList.forEach(summary -> {
             model.addRow(new Object[]{
-                    payment.getId(),
-                    payment.getPatientName(),
-                    payment.getAmount(),
-                    payment.getMethod(),
-                    payment.getStatus(),
-                    payment.getCreatedAt(),
-                    payment.getTreatmentStageId() == 0 ? "Không có" : payment.getTreatmentStageId()
+                    summary.getUserId(),
+                    summary.getPatientName(),
+                    currencyFormat.format(summary.getTotalAmount()),
+                    currencyFormat.format(summary.getPaidAmount()),
+                    currencyFormat.format(summary.getUnpaidAmount())
             });
-
         });
     }
 }

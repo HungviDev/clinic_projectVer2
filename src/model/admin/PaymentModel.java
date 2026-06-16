@@ -12,6 +12,7 @@ public class PaymentModel {
     private String status;
     private Timestamp createdAt;
     private int treatmentStageId;
+    private String treatmentStageName;
 
     public PaymentModel() {
     }
@@ -90,5 +91,13 @@ public class PaymentModel {
 
     public void setTreatmentStageId(int treatmentStageId) {
         this.treatmentStageId = treatmentStageId;
+    }
+
+    public String getTreatmentStageName() {
+        return treatmentStageName;
+    }
+
+    public void setTreatmentStageName(String treatmentStageName) {
+        this.treatmentStageName = treatmentStageName;
     }
 }
