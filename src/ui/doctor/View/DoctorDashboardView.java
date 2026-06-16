@@ -14,6 +14,7 @@ import ui.doctor.Model.DoctorDashboardModel;
 public class DoctorDashboardView extends JPanel {
 
     private DoctorDashboardController controller;
+    
 
     // =====================================================
     // DATA
@@ -116,7 +117,7 @@ public class DoctorDashboardView extends JPanel {
         panel.add(new StatCard("Lịch hẹn hôm nay", lblAppointments, new Color(52, 152, 219)));
         panel.add(new StatCard("BN đang điều trị", lblPatients, new Color(46, 204, 113)));
         panel.add(new StatCard("Ca hoàn thành tháng", lblCompleted, new Color(243, 156, 18)));
-        panel.add(new StatCard("Doanh thu hôm nay", lblRevenue, new Color(155, 89, 182)));
+        panel.add(new StatCard("Doanh thu tháng", lblRevenue, new Color(155, 89, 182)));
 
         return panel;
     }
@@ -203,4 +204,8 @@ public class DoctorDashboardView extends JPanel {
             });
         }
     }
+  public void refreshDashboard() {
+    loadDashboardData(currentDoctorId);
+    loadAppointments(currentDoctorId);
+} 
 }
