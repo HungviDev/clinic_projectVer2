@@ -66,4 +66,30 @@ public class BookingDAO {
         }
         return null; 
     }
+
+    public int getUseridbydoctorId(int doctorid){
+            String sql = "select user_id from doctors where id = ?";
+            
+            try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+            ) {
+                // Truyền tham số doctorid vào dấu ?
+                ps.setInt(1, doctorid);
+                
+                // Thực thi truy vấn
+                ResultSet rs = ps.executeQuery();
+                
+                // Kiểm tra xem có kết quả trả về không
+                if (rs.next()) {
+                    return rs.getInt("user_id"); // Lấy giá trị cột user_id
+                }
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            // Trả về -1 (hoặc 0 tùy logic dự án của bạn) nếu có lỗi hoặc không tìm thấy bác sĩ
+            return -1; 
+        }
 }

@@ -2,6 +2,7 @@ package ui.patient;
 
 import config.DBConnection;
 import controller.user.BookingController;
+import dao.user.BookingDAO;
 import dao.user.DoctorDAO;
 import global.GlobalData;
 import model.user.Booking;
@@ -70,6 +71,7 @@ public class BookingPanel extends JPanel {
     // Danh sách khung giờ mẫu
     private final String[] timeSlots = {"08:30", "09:30", "10:30", "13:30", "14:30", "15:30"};
     private DoctorDAO doctorDAO = new DoctorDAO();
+    private BookingDAO bkd = new BookingDAO();
     public BookingPanel(int userId) {
         controller = new BookingController();
         this.loggedInUserId = userId;
@@ -343,9 +345,11 @@ public class BookingPanel extends JPanel {
                 loadDoctors();
                 updateTimeSlots();
                 doctorDAO.getFullNameById(booking.getDoctorId());
+                
+                int userid = bkd.getUseridbydoctorId(selectedDoctorId);
                 sendMail(
                 GlobalData.userModel.getEmail(),
-                doctorDAO.getFullNameById(booking.getDoctorId()),
+                doctorDAO.getFullNameById(userid),
                 GlobalData.userModel.getFullName(),
                 new java.text.SimpleDateFormat("dd/MM/yyyy hh:mm a")
                         .format(booking.getAppointmentDate())
