@@ -41,13 +41,14 @@ public class DoctorDashboardController {
         // 4. Doanh thu thực tế phát sinh trong ngày hôm nay của riêng bác sĩ này
         // 4. Doanh thu thực tế phát sinh trong ngày hôm nay của riêng bác sĩ này
 String sqlRevenueToday = 
-        "SELECT ISNULL(SUM(p.amount), 0) " +
-        "FROM payments p " +
-        "JOIN treatment_stages ts ON p.treatment_stage_id = ts.id " +
-        "JOIN medical_records mr ON ts.treatment_route_id = mr.treatment_route_id " +
-        "JOIN doctors d ON mr.doctor_id = d.id " +
-        "WHERE d.user_id = ? " +
-        "AND CAST(p.created_at AS DATE) = CAST(GETDATE() AS DATE)";
+    "SELECT ISNULL(SUM(p.amount), 0) " +
+    "FROM payments p " +
+    "JOIN treatment_stages ts ON p.treatment_stage_id = ts.id " +
+    "JOIN medical_records mr ON ts.treatment_route_id = mr.treatment_route_id " +
+    "JOIN doctors d ON mr.doctor_id = d.id " +
+    "WHERE d.user_id = ? " +
+    "AND MONTH(p.created_at) = MONTH(GETDATE()) " +
+    "AND YEAR(p.created_at) = YEAR(GETDATE())";
         try (Connection conn = DBConnection.getConnection()) {
             
             // 1. Số lịch hẹn hôm nay

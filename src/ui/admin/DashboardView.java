@@ -4,7 +4,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import controller.admin.AppointmentController;
-import controller.admin.OrderController;
 import controller.admin.PaymentController;
 import controller.admin.ServiceController;
 import controller.admin.UserController;
@@ -36,7 +35,6 @@ public class DashboardView extends JPanel {
     UserController userController = new UserController();
     AppointmentController appointmentController = new AppointmentController();
     PaymentController paymentController = new PaymentController();
-    OrderController orderController = new OrderController();
     ServiceController serviceController = new ServiceController();
     public DashboardView() {
 
@@ -127,22 +125,11 @@ public class DashboardView extends JPanel {
                 WARNING_COLOR
         )
 );
-
-        cardPanel.add(
-        createCard(
-                "Tổng Đơn Hàng",
-                String.valueOf(
-                        orderController.countOrders()
-                ),
-                DANGER_COLOR
-        )
-);
-
         cardPanel.add(
         createCard(
                 "Tổng Doanh Thu",
                 String.valueOf(
-                        orderController.getTotalRevenue()
+                        paymentController.getTotal() +" VND"
                 ),
                 SUCCESS_COLOR
         )

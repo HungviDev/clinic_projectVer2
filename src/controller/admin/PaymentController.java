@@ -61,6 +61,21 @@ public class PaymentController {
         }
         return list;
     }
+    public int getTotal() {
+        String sql = "SELECT SUM(amount) AS total FROM payments WHERE status = N'Đã thanh toán'";
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()
+        ) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 
     public List<PaymentModel> getPaymentsByUserId(int userId) {
         List<PaymentModel> list = new ArrayList<>();

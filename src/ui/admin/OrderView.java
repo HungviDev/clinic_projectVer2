@@ -1,6 +1,5 @@
 package ui.admin;
 
-import controller.admin.OrderController;
 import model.admin.OrderModel;
 
 import javax.swing.*;
@@ -40,8 +39,7 @@ public class OrderView extends JPanel {
     // =====================================
     // CONTROLLER
     // =====================================
-    private OrderController orderController =
-            new OrderController();
+
 
     // =====================================
     // CONSTRUCTOR
@@ -111,7 +109,6 @@ public class OrderView extends JPanel {
         // =====================================
         btnRefresh.addActionListener(e -> {
 
-            loadAllOrder();
 
             JOptionPane.showMessageDialog(
                     this,
@@ -185,7 +182,6 @@ public class OrderView extends JPanel {
         // =====================================
         // LOAD DATA
         // =====================================
-        loadAllOrder();
 
         // =====================================
         // ADD COMPONENT
@@ -232,41 +228,5 @@ public class OrderView extends JPanel {
     // =====================================
     // LOAD ALL ORDER
     // =====================================
-    public void loadAllOrder() {
 
-        try {
-
-            model.setRowCount(0);
-
-            List<OrderModel> orderList =
-                    orderController.getAllOrder();
-
-            orderList.forEach(order -> {
-
-                model.addRow(new Object[]{
-
-                        order.getId(),
-
-                        order.getCustomerName(),
-
-                        order.getServiceName(),
-
-                        order.getQuantity(),
-
-                        order.getTotal(),
-
-                        order.getStatus()
-                });
-            });
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Lỗi load dữ liệu"
-            );
-        }
-    }
 }
