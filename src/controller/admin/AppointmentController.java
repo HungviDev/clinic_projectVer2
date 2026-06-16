@@ -86,6 +86,44 @@ public class AppointmentController {
 
         return appointmentList;
     }
+    
+    public List<AppointmentModel> getRecentAppointments(int limit) {
+        List<AppointmentModel> appointmentList = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            String sql = """
+                    SELECT TOP (?)
+                        appointments.id AS appointment_id,
+                        doctor_user.fullname AS doctor_name,
+                        patient_user.fullname AS patient_name,
+                        appointments.appointment_date,
+                        appointments.status
+                    FROM appointments
+                    INNER JOIN doctors ON appointments.doctor_id = doctors.id
+                    INNER JOIN users AS doctor_user ON doctors.user_id = doctor_user.id
+                    INNER JOIN users AS patient_user ON appointments.user_id = patient_user.id
+                    ORDER BY appointments.appointment_date DESC
+                    """;
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, limit);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                AppointmentModel appointment = new AppointmentModel();
+                appointment.setId(rs.getInt("appointment_id"));
+                appointment.setDoctorName(rs.getString("doctor_name"));
+                appointment.setPatientName(rs.getString("patient_name"));
+                appointment.setAppointmentDate(rs.getDate("appointment_date"));
+                appointment.setStatus(rs.getString("status"));
+                appointmentList.add(appointment);
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return appointmentList;
+    }
     public void cancelPastAppointments() {
         try {
             Connection conn = DBConnection.getConnection();

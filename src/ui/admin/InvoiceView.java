@@ -151,6 +151,16 @@ public class InvoiceView extends JPanel {
                 )
         );
 
+        table.getTableHeader().setBackground(
+                PRIMARY_COLOR
+        );
+
+        table.getTableHeader().setForeground(
+                Color.WHITE
+        );
+
+        table.getTableHeader().setReorderingAllowed(false);
+
         JScrollPane scrollPane =
                 new JScrollPane(table);
 

@@ -134,6 +134,43 @@ public class PaymentController {
         return list;
     }
 
+    public List<PaymentModel> getRecentPayments(int limit) {
+        List<PaymentModel> list = new ArrayList<>();
+        String sql = """
+                SELECT TOP (?) p.id, p.user_id, u.fullname AS patient_name, p.amount, p.method, p.status, p.created_at, p.treatment_stage_id, ts.stage_name AS treatment_stage_name
+                FROM payments p
+                LEFT JOIN users u ON p.user_id = u.id
+                LEFT JOIN treatment_stages ts ON p.treatment_stage_id = ts.id
+                ORDER BY p.id DESC
+                """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)
+        ) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    PaymentModel payment = new PaymentModel();
+                    payment.setId(rs.getInt("id"));
+                    payment.setUserId(rs.getInt("user_id"));
+                    payment.setPatientName(rs.getString("patient_name") != null ? rs.getString("patient_name") : "Chưa xác định");
+                    payment.setAmount(rs.getDouble("amount"));
+                    payment.setMethod(rs.getString("method"));
+                    payment.setStatus(rs.getString("status"));
+                    payment.setCreatedAt(rs.getTimestamp("created_at"));
+                    payment.setTreatmentStageId(rs.getInt("treatment_stage_id"));
+                    payment.setTreatmentStageName(rs.getString("treatment_stage_name"));
+    
+                    list.add(payment);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public PaymentModel getPaymentById(int id) {
         String sql = """
                 SELECT p.id, p.user_id, u.fullname AS patient_name, p.amount, p.method, p.status, p.created_at, p.treatment_stage_id, ts.stage_name AS treatment_stage_name

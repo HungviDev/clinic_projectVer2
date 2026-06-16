@@ -149,7 +149,6 @@ public class MainDashboard extends JFrame {
             JButton btnDoctors = createMenuButton("Quản lý bác sĩ");
             JButton btnServices = createMenuButton("Quản lý dịch vụ");
             JButton btnAppoinment = createMenuButton("Quản lý lịch hẹn");
-            JButton btnOrders = createMenuButton("Quản lý đơn hàng");
             JButton btnInvoice = createMenuButton("Quản lý hóa đơn");
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnUsers);
@@ -158,7 +157,6 @@ public class MainDashboard extends JFrame {
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnServices);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
-            sidebar.add(btnOrders);
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(Box.createRigidArea(new Dimension(0, 10)));
             sidebar.add(btnAppoinment);
@@ -168,7 +166,6 @@ public class MainDashboard extends JFrame {
             btnUsers.addActionListener(e -> cardLayout.show(contentPanel, "USERS"));
             btnDoctors.addActionListener(e -> cardLayout.show(contentPanel, "DOCTORS"));
             btnServices.addActionListener(e -> cardLayout.show(contentPanel, "SERVICES_ADMIN"));
-            btnOrders.addActionListener(e -> cardLayout.show(contentPanel, "ORDERS"));
             btnAppoinment.addActionListener(e -> cardLayout.show(contentPanel, "APPOINTMENTS"));
             btnInvoice.addActionListener(e -> cardLayout.show(contentPanel, "INVOICE"));
         }

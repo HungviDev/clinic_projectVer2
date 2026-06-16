@@ -5,6 +5,7 @@ import javax.swing.border.EmptyBorder;
 
 import controller.admin.AppointmentController;
 import controller.admin.OrderController;
+import controller.admin.PaymentController;
 import controller.admin.ServiceController;
 import controller.admin.UserController;
 
@@ -34,6 +35,7 @@ public class DashboardView extends JPanel {
             new Color(231, 76, 60);
     UserController userController = new UserController();
     AppointmentController appointmentController = new AppointmentController();
+    PaymentController paymentController = new PaymentController();
     OrderController orderController = new OrderController();
     ServiceController serviceController = new ServiceController();
     public DashboardView() {
@@ -177,14 +179,16 @@ public class DashboardView extends JPanel {
         JTextArea txtAppointment =
                 new JTextArea();
 
-        txtAppointment.setText(
-                """
-                • Nguyễn Văn A - 09:00 AM
-                • Trần Văn B - 10:30 AM
-                • Lê Văn C - 01:00 PM
-                • Phạm Thị D - 03:00 PM
-                """
-        );
+        StringBuilder apptBuilder = new StringBuilder();
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+        for (model.admin.AppointmentModel appt : appointmentController.getRecentAppointments(4)) {
+            String dateStr = appt.getAppointmentDate() != null ? sdf.format(appt.getAppointmentDate()) : "N/A";
+            apptBuilder.append("• ").append(appt.getPatientName()).append(" - ").append(dateStr).append("\n");
+        }
+        if (apptBuilder.length() == 0) {
+            apptBuilder.append("Chưa có lịch hẹn nào.");
+        }
+        txtAppointment.setText(apptBuilder.toString());
 
         txtAppointment.setFont(
                 new Font("Segoe UI", Font.PLAIN, 15)
@@ -197,24 +201,26 @@ public class DashboardView extends JPanel {
         appointmentPanel.add(txtAppointment);
 
         // =====================================
-        // ORDER PANEL
+        // INVOICE PANEL
         // =====================================
         JPanel orderPanel =
                 createInfoPanel(
-                        "Đơn hàng gần đây"
+                        "Hóa đơn gần đây"
                 );
 
         JTextArea txtOrder =
                 new JTextArea();
 
-        txtOrder.setText(
-                """
-                • Implant - 15,000,000đ
-                • Niềng răng - 30,000,000đ
-                • Bọc sứ - 5,000,000đ
-                • Tẩy trắng - 1,500,000đ
-                """
-        );
+        StringBuilder orderBuilder = new StringBuilder();
+        java.text.NumberFormat currencyFormat = java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("vi", "VN"));
+        for (model.admin.PaymentModel payment : paymentController.getRecentPayments(4)) {
+            String stageName = payment.getTreatmentStageName() != null ? payment.getTreatmentStageName() : "Khác";
+            orderBuilder.append("• ").append(payment.getPatientName()).append(" - ").append(stageName).append(" - ").append(currencyFormat.format(payment.getAmount())).append("\n");
+        }
+        if (orderBuilder.length() == 0) {
+            orderBuilder.append("Chưa có hóa đơn nào.");
+        }
+        txtOrder.setText(orderBuilder.toString());
 
         txtOrder.setFont(
                 new Font("Segoe UI", Font.PLAIN, 15)
