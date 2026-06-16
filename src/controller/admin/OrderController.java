@@ -206,8 +206,5 @@ public class OrderController {
 
     return totalRevenue;
 }
-    public static void main(String[] args) {
-        List<OrderModel> userList = new OrderController().getAllOrder();
-        System.out.println(userList.size()+"hiển thị danh sách bác sĩ");
-    }
+  
 }
